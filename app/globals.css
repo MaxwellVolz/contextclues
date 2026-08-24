@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/*
+ * ContextClues — forensic investigation board, dark by design.
+ * Categorical series colors are the dataviz-validated dark theme
+ * (all six checks pass against surface #161311).
+ */
+@theme {
+  --color-bg: #0f0d0b;
+  --color-panel: #161311;
+  --color-raised: #1e1a16;
+  --color-line: #2b251f;
+  --color-line-2: #3a322a;
+
+  --color-ink: #ece5d8;
+  --color-ink-2: #a89f90;
+  --color-ink-3: #79705f;
+
+  --color-accent: #d4a24e; /* evidence-tape amber — identity, never a data series */
+  --color-thread: #c9614f; /* red thread — warnings */
+
+  /* categorical series, fixed order (validated) */
+  --color-s-user: #3987e5;
+  --color-s-assistant: #d95926;
+  --color-s-tool: #199e70;
+  --color-s-injected: #c98500;
+  --color-s-summary: #d55181;
+  --color-s-system: #008300;
+  --color-s-overhead: #52514e; /* neutral: non-identity, inferred remainder */
+
+  --font-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --font-sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  /* corkboard-adjacent: faint dotted pinboard grid, kept subtle */
+  background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.025) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+::selection {
+  background: rgb(212 162 78 / 0.35);
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.025);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-line);
+  background: linear-gradient(rgb(255 255 255 / 0.015), transparent);
+  border-radius: 8px 8px 0 0;
+  min-height: 38px;
+}
+
+.panel-title {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.panel-title::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* footnote strip at the bottom of a panel */
+.panel-foot {
+  border-top: 1px solid var(--color-line);
+  padding: 8px 16px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--color-ink-3);
+}
+
+/* shared form controls */
+.control {
+  border: 1px solid var(--color-line-2);
+  background: var(--color-raised);
+  border-radius: 5px;
+  color: var(--color-ink);
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+.control::placeholder {
+  color: var(--color-ink-3);
+}
+.control:focus {
+  border-color: var(--color-accent);
+}
+
+select.control {
+  appearance: none;
+  padding-right: 26px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path d='M0 0l4 5 4-5z' fill='%2379705f'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--color-accent);
+}
+
+/* inferred/overhead slices wear a texture so they never impersonate observed data */
+.tex-inferred {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 3px,
+    rgb(255 255 255 / 0.14) 3px 4px
+  );
+}
+
+.scrollbox {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-2) transparent;
+}
+.scrollbox::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbox::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 4px;
+  border: 2px solid var(--color-panel);
+}
+.scrollbox::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.live-dot {
+  animation: pulse-live 2s ease-in-out infinite;
+}
