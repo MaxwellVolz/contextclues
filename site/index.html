@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ContextClues: context forensics for Claude Code</title>
+<meta name="description" content="A local, read-only dashboard that shows what a running Claude Code session has in its context window: how full it is, what is in it, and how much working room is left.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#131110; --bg2:#191614; --bg3:#1F1B18; --bg4:#241F1B;
+  --line:#2C2521; --line-soft:#231D19;
+  --text:#E9E3D9; --text2:#A79C8D; --text3:#6E6459;
+  --amber:#E0AC4B; --amber-dim:#7A5D26;
+  --green:#6FBF8B; --orange:#D97757; --blue:#6C9BD2;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--sans); font-size:16px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(900px 500px at 50% -8%, rgba(224,172,75,.07), transparent 70%);
+}
+.wrap{position:relative; z-index:1; max-width:var(--maxw); margin:0 auto; padding:0 24px}
+a{color:var(--amber); text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{margin:0; font-weight:600; letter-spacing:-.01em; line-height:1.2}
+p{margin:0}
+
+/* nav */
+nav{
+  position:sticky; top:0; z-index:20;
+  background:rgba(19,17,16,.86); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+}
+.nav-in{max-width:var(--maxw); margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:16px}
+.mark{font-family:var(--mono); font-size:13px; letter-spacing:.22em; font-weight:700; color:var(--text)}
+.mark span{color:var(--amber)}
+.nav-sp{flex:1}
+.nav-a{font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:var(--text2); text-decoration:none}
+.nav-a:hover{color:var(--text); text-decoration:none}
+.nav-btn{
+  font-family:var(--mono); font-size:12px; letter-spacing:.06em;
+  border:1px solid var(--amber-dim); color:var(--amber);
+  padding:6px 13px; border-radius:6px; text-decoration:none; white-space:nowrap;
+}
+.nav-btn:hover{background:rgba(224,172,75,.09); text-decoration:none}
+
+/* shared */
+section{padding:76px 0; border-top:1px solid var(--line-soft)}
+section:first-of-type{border-top:0}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--text3);
+  text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:20px;
+}
+.eyebrow::before{content:""; width:6px; height:6px; border-radius:50%; border:1.5px solid var(--amber); flex:none}
+.lead{color:var(--text2); font-size:17px; max-width:66ch}
+.prose p+p{margin-top:16px}
+.prose{color:var(--text2); max-width:70ch}
+.prose strong{color:var(--text); font-weight:500}
+h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
+
+/* hero */
+.hero{padding:72px 0 56px}
+.hero h1{font-size:clamp(32px,5.4vw,52px); max-width:19ch; margin-bottom:22px}
+.hero h1 em{font-style:normal; color:var(--amber)}
+.hero .lead{font-size:19px; max-width:62ch}
+.hero-sup{margin-top:14px; font-family:var(--mono); font-size:13px; color:var(--text3); max-width:62ch}
+.cmd{
+  margin-top:30px; display:flex; align-items:center; gap:12px;
+  background:var(--bg2); border:1px solid var(--line); border-radius:9px;
+  padding:13px 15px; max-width:560px; font-family:var(--mono); font-size:13.5px;
+}
+.cmd code{color:var(--text); overflow-x:auto; white-space:nowrap; flex:1}
+.cmd .dollar{color:var(--amber); flex:none}
+.copy{
+  flex:none; font-family:var(--mono); font-size:11px; letter-spacing:.07em;
+  background:transparent; border:1px solid var(--line); color:var(--text2);
+  padding:5px 10px; border-radius:5px; cursor:pointer;
+}
+.copy:hover{border-color:var(--amber-dim); color:var(--amber)}
+.badges{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
+.badge{
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--text2);
+  border:1px solid var(--line); border-radius:999px; padding:5px 12px;
+}
+.badge b{color:var(--green); font-weight:400}
+
+/* ── dashboard mockup ── */
+.shot-outer{overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch}
+.shot{
+  min-width:940px; background:var(--bg2); border:1px solid var(--line);
+  border-radius:12px; padding:12px; font-family:var(--mono);
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.7);
+}
+.shot-bar{
+  display:flex; align-items:center; gap:14px; padding:9px 12px; margin-bottom:11px;
+  background:var(--bg3); border:1px solid var(--line-soft); border-radius:8px; font-size:11px;
+}
+.shot-mark{font-size:11px; letter-spacing:.2em; font-weight:700}
+.shot-mark span{color:var(--amber)}
+.dim{color:var(--text3)}
+.pill{
+  border:1px solid var(--line); border-radius:6px; padding:3px 10px;
+  color:var(--text2); background:var(--bg4);
+}
+.pill.live{border-color:#33553F; color:var(--green); background:rgba(111,191,139,.06)}
+.dot{display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--green); margin-right:6px; vertical-align:middle}
+.grid3{display:grid; grid-template-columns:266px 1fr 288px; gap:11px}
+.pnl{background:var(--bg3); border:1px solid var(--line-soft); border-radius:8px; padding:11px}
+.pnl+.pnl{margin-top:11px}
+.pnl-h{display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:.15em; color:var(--text2); text-transform:uppercase; margin-bottom:12px}
+.pnl-h::before{content:""; width:5px; height:5px; border-radius:50%; border:1px solid var(--amber); flex:none}
+.pnl-h .r{margin-left:auto; letter-spacing:.04em; color:var(--text3); text-transform:none; font-size:10px}
+.tag{
+  font-size:9px; letter-spacing:.14em; border:1px solid #33553F; color:var(--green);
+  padding:2px 6px; border-radius:4px; text-transform:uppercase;
+}
+.big{font-size:38px; font-weight:700; letter-spacing:-.02em; line-height:1}
+.meter-top{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:12px}
+.meter-r{text-align:right; font-size:11px; color:var(--text2); line-height:1.5}
+.bar{height:7px; background:var(--bg); border-radius:3px; overflow:hidden; border:1px solid var(--line-soft)}
+.bar i{display:block; height:100%; width:37.9%; background:linear-gradient(90deg,var(--amber-dim),var(--amber))}
+.ticks{display:flex; font-size:9px; color:var(--text3); margin-top:3px}
+.ticks i{font-style:normal}
+.spark{margin:12px 0 0; background:var(--bg); border:1px solid var(--line-soft); border-radius:6px; padding:8px}
+.spark svg{display:block; width:100%; height:56px}
+.spark-l{display:flex; justify-content:space-between; font-size:9px; color:var(--text3); margin-top:5px}
+.kv{display:flex; align-items:baseline; gap:8px; font-size:10.5px; margin-top:7px; color:var(--text2)}
+.kv .k{color:var(--text3)}
+.kv .fill{flex:1; border-bottom:1px dotted #2A241F; transform:translateY(-3px)}
+.kv .v{color:var(--text)}
+.note{font-size:9.5px; color:var(--text3); line-height:1.55; margin-top:12px; border-top:1px solid var(--line-soft); padding-top:9px}
+.stack{display:flex; height:16px; border-radius:4px; overflow:hidden; margin-top:2px}
+.stack i{display:block; height:100%}
+.legend{display:flex; flex-wrap:wrap; gap:9px; margin-top:9px; font-size:9.5px; color:var(--text2)}
+.legend span{display:flex; align-items:center; gap:5px}
+.legend b{width:7px; height:7px; border-radius:2px; display:inline-block}
+.search{
+  background:var(--bg); border:1px solid var(--line-soft); border-radius:6px;
+  padding:7px 10px; font-size:10.5px; color:var(--text3); margin-bottom:9px;
+}
+table{width:100%; border-collapse:collapse; font-size:10.5px}
+th{
+  text-align:left; font-weight:400; font-size:9px; letter-spacing:.13em; color:var(--text3);
+  text-transform:uppercase; padding:0 0 7px; border-bottom:1px solid var(--line-soft);
+}
+td{padding:6px 0; border-bottom:1px solid rgba(44,37,33,.5); color:var(--text2); white-space:nowrap}
+td.n{color:var(--text3)}
+td.p{color:var(--text); max-width:1px; overflow:hidden; text-overflow:ellipsis}
+td.r{text-align:right}
+.sq{display:inline-block; width:7px; height:7px; border-radius:2px; margin-right:7px; vertical-align:baseline}
+.inctx{font-size:8.5px; letter-spacing:.1em; color:var(--text3)}
+.trow{display:flex; align-items:center; gap:9px; font-size:10.5px; padding:5px 0; color:var(--text2)}
+.used{font-size:8.5px; letter-spacing:.12em; border:1px solid var(--amber-dim); color:var(--amber); padding:2px 6px; border-radius:4px}
+.trow .nm{color:var(--text)}
+.trow .sp{margin-left:auto; color:var(--text3); font-size:10px}
+.act{display:flex; gap:8px; font-size:10px; padding:6px 0; border-bottom:1px solid rgba(44,37,33,.45); line-height:1.45}
+.act .ic{color:var(--amber); flex:none}
+.act .bd{flex:1; min-width:0}
+.act .t1{color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.act .t2{color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.act .ts{color:var(--text3); font-size:9px; flex:none}
+.shot-foot{
+  margin-top:11px; padding:9px 12px; background:var(--bg3); border:1px solid var(--line-soft);
+  border-radius:8px; font-size:9.5px; color:var(--text3); line-height:1.6;
+}
+.shot-cap{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:16px}
+
+/* panels grid */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:10px; overflow:hidden; margin-top:34px}
+.card{background:var(--bg); padding:22px}
+.card h3{font-family:var(--mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--amber); margin-bottom:9px}
+.card p{font-size:14px; color:var(--text2); line-height:1.6}
+
+/* mechanism diagram */
+.flow{
+  margin-top:30px; background:var(--bg2); border:1px solid var(--line); border-radius:10px;
+  padding:20px; overflow-x:auto;
+}
+.flow pre{
+  margin:0; font-family:var(--mono); font-size:12px; line-height:1.75; color:var(--text2);
+  white-space:pre;
+}
+.flow pre b{color:var(--amber); font-weight:400}
+.flow pre i{color:var(--green); font-style:normal}
+
+/* safety list */
+.safe{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:24px; margin-top:32px}
+.safe-i h3{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px}
+.safe-i h3::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--green); flex:none}
+.safe-i p{font-size:14px; color:var(--text2); line-height:1.6}
+
+/* honesty table */
+.conf{margin-top:32px; border:1px solid var(--line-soft); border-radius:10px; overflow:hidden}
+.conf-r{display:grid; grid-template-columns:150px 1fr; gap:20px; padding:18px 20px; border-bottom:1px solid var(--line-soft)}
+.conf-r:last-child{border-bottom:0}
+.conf-r:nth-child(odd){background:var(--bg2)}
+.conf-t{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; align-self:start}
+.c-obs{color:var(--green)} .c-est{color:var(--amber)} .c-inf{color:var(--blue)} .c-asm{color:var(--text3)}
+.conf-d{font-size:14px; color:var(--text2); line-height:1.6}
+.conf-d b{color:var(--text); font-weight:500}
+
+/* install */
+.steps{margin-top:30px; background:var(--bg2); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+.steps pre{
+  margin:0; padding:22px; font-family:var(--mono); font-size:13px; line-height:1.95;
+  color:var(--text); overflow-x:auto;
+}
+.steps pre .c{color:var(--text3)}
+.steps pre .d{color:var(--amber)}
+.req{margin-top:20px; font-family:var(--mono); font-size:12px; color:var(--text3); line-height:1.8}
+.req b{color:var(--text2); font-weight:400}
+
+/* close */
+.close{text-align:center; padding:84px 0}
+.close h2{max-width:22ch; margin:0 auto 26px}
+.cta{
+  display:inline-block; font-family:var(--mono); font-size:13px; letter-spacing:.06em;
+  background:var(--amber); color:#1A1509; font-weight:500;
+  padding:12px 26px; border-radius:7px; text-decoration:none;
+}
+.cta:hover{background:#EDBB5C; text-decoration:none}
+footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
+.foot{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center; font-family:var(--mono); font-size:11px; color:var(--text3)}
+.foot .sp{flex:1}
+.foot a{color:var(--text2)}
+.disc{margin-top:16px; font-family:var(--mono); font-size:10.5px; color:var(--text3); line-height:1.7; max-width:76ch}
+
+@media (max-width:760px){
+  section{padding:56px 0}
+  .hero{padding:48px 0 40px}
+  .conf-r{grid-template-columns:1fr; gap:8px}
+  .nav-a.hide-s{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="mark">CONTEXT<span>CLUES</span></div>
+    <div class="nav-sp"></div>
+    <a class="nav-a hide-s" href="#panels">What it shows</a>
+    <a class="nav-a hide-s" href="#honesty">Honesty policy</a>
+    <a class="nav-a" href="#install">Install</a>
+    <a class="nav-btn" href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Local only &middot; Read only &middot; Open source</div>
+    <h1>Your agent's context window is a <em>black box</em>. Open it.</h1>
+    <p class="lead">ContextClues reads a running Claude Code session on your own machine and shows exactly what is in its context window, what is filling it, and how much working room is left before it compacts.</p>
+    <p class="hero-sup">Nothing is uploaded. Nothing is modified. Every number is labeled with how it was obtained.</p>
+
+    <div class="cmd">
+      <span class="dollar">$</span>
+      <code id="cmd">git clone https://github.com/MaxwellVolz/contextclues.git &amp;&amp; cd contextclues &amp;&amp; npm i &amp;&amp; npm run dev</code>
+      <button class="copy" id="copy">COPY</button>
+    </div>
+
+    <div class="badges">
+      <span class="badge"><b>&#9679;</b> No cloud</span>
+      <span class="badge"><b>&#9679;</b> No account</span>
+      <span class="badge"><b>&#9679;</b> No telemetry</span>
+      <span class="badge"><b>&#9679;</b> Never writes to ~/.claude</span>
+    </div>
+  </section>
+
+  <!-- MOCKUP -->
+  <section style="padding-top:0;border-top:0">
+    <div class="shot-outer">
+      <div class="shot">
+
+        <div class="shot-bar">
+          <div class="shot-mark">CONTEXT<span>CLUES</span></div>
+          <span class="dim">CASE FILE</span>
+          <span class="pill">&#9679; refactor-billing &middot; /Users/dev/acme-api</span>
+          <span class="pill live"><span class="dot"></span>LIVE &middot; pid 41827 &middot; busy</span>
+          <div class="nav-sp"></div>
+          <span class="dim">stream on &nbsp; rendered just now</span>
+        </div>
+
+        <div class="grid3">
+
+          <!-- LEFT -->
+          <div>
+            <div class="pnl">
+              <div class="pnl-h">Context Meter <span class="r"><span class="tag">Observed</span></span></div>
+              <div class="meter-top">
+                <div class="big">37.9<span style="color:var(--amber)">%</span></div>
+                <div class="meter-r">379k / 1.00M<br><span class="dim" style="font-size:9px;letter-spacing:.12em">TOKENS</span></div>
+              </div>
+              <div class="bar"><i></i></div>
+              <div class="ticks"><i style="margin-left:70%">70</i><i style="margin-left:calc(15% - 12px)">85</i></div>
+
+              <div class="spark">
+                <svg viewBox="0 0 240 56" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E0AC4B" stop-opacity=".26"/>
+                      <stop offset="100%" stop-color="#E0AC4B" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,54 L14,50 L28,47 L42,44 L56,41 L70,39 L84,33 L96,32 L96,41 L110,38 L124,35 L138,31 L152,28 L166,24 L180,21 L194,17 L208,14 L222,11 L240,8 L240,56 L0,56 Z" fill="url(#g)"/>
+                  <path d="M0,54 L14,50 L28,47 L42,44 L56,41 L70,39 L84,33 L96,32 L96,41 L110,38 L124,35 L138,31 L152,28 L166,24 L180,21 L194,17 L208,14 L222,11 L240,8"
+                        fill="none" stroke="#E0AC4B" stroke-width="1.3" stroke-linejoin="round"/>
+                  <line x1="96" y1="4" x2="96" y2="56" stroke="#6E6459" stroke-width="1" stroke-dasharray="2 3"/>
+                </svg>
+                <div class="spark-l"><span>405 requests</span><span>context growth</span></div>
+              </div>
+
+              <div class="kv"><span class="k">burn rate</span><span class="fill"></span><span class="v">~2.0k/req</span></div>
+              <div class="kv"><span class="k">runway</span><span class="fill"></span><span class="v">2.1 h &middot; ~306 to 925 req</span></div>
+              <div class="kv"><span class="k">cache read</span><span class="fill"></span><span class="v">378k</span></div>
+              <div class="kv"><span class="k">fresh input</span><span class="fill"></span><span class="v">2</span></div>
+              <div class="kv"><span class="k">observed</span><span class="fill"></span><span class="v">just now</span></div>
+              <div class="kv"><span class="k">model</span><span class="fill"></span><span class="v">claude-opus-5</span></div>
+              <p class="note">Token count is the API's own figure from the last assistant turn (observed). Max window is assumed. Rate observed, runway projected.</p>
+            </div>
+
+            <div class="pnl">
+              <div class="pnl-h">Composition <span class="r">~379k accounted</span></div>
+              <div class="stack">
+                <i style="width:22%;background:var(--orange)"></i>
+                <i style="width:15%;background:var(--amber)"></i>
+                <i style="width:11%;background:var(--blue)"></i>
+                <i style="width:9%;background:var(--green)"></i>
+                <i style="width:43%;background:repeating-linear-gradient(45deg,#3A322C,#3A322C 3px,#2A241F 3px,#2A241F 6px)"></i>
+              </div>
+              <div class="legend">
+                <span><b style="background:var(--orange)"></b>tool results</span>
+                <span><b style="background:var(--amber)"></b>assistant</span>
+                <span><b style="background:var(--blue)"></b>user</span>
+                <span><b style="background:var(--green)"></b>injected</span>
+                <span><b style="background:#3A322C"></b>system overhead</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- MIDDLE -->
+          <div>
+            <div class="pnl" style="height:100%">
+              <div class="pnl-h">Evidence <span class="r">490 entries &middot; newest 250</span></div>
+              <div class="search">search evidence: text, tool, file path&hellip;</div>
+              <table>
+                <thead><tr><th>#</th><th>Source</th><th>Preview</th><th class="r">~Tokens</th><th class="r">Age</th><th class="r">Status</th></tr></thead>
+                <tbody>
+                  <tr><td class="n">#1360</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] src/billing/invoice.ts</td><td class="r">~4,102</td><td class="r n">just now</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1359</td><td><span class="sq" style="background:var(--amber)"></span>assistant</td><td class="p">Read({"file_path":"src/billing/&hellip;</td><td class="r">~86</td><td class="r n">just now</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1358</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Bash] npm test: 41 passing</td><td class="r">~612</td><td class="r n">8s ago</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1357</td><td><span class="sq" style="background:var(--blue)"></span>user</td><td class="p">also update the proration path</td><td class="r">~11</td><td class="r n">22s ago</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1356</td><td><span class="sq" style="background:var(--amber)"></span>assistant</td><td class="p">The proration branch assumes a&hellip;</td><td class="r">~340</td><td class="r n">31s ago</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1355</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Grep] "prorate": 18 matches</td><td class="r">~1,204</td><td class="r n">44s ago</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1352</td><td><span class="sq" style="background:#7A6A55"></span>injected</td><td class="p">[total_tokens_reminder]</td><td class="r">~13</td><td class="r n">1m ago</td><td class="r inctx">IN CTX</td></tr>
+                  <tr><td class="n">#1341</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] package-lock.json</td><td class="r">~31,880</td><td class="r n">14m ago</td><td class="r inctx" style="color:var(--orange)">COMPACTED OUT</td></tr>
+                  <tr><td class="n">#1338</td><td><span class="sq" style="background:var(--orange)"></span>system</td><td class="p">compact_boundary: 412k &rarr; 96k</td><td class="r">&middot;</td><td class="r n">14m ago</td><td class="r inctx">BOUNDARY</td></tr>
+                  <tr><td class="n">#1330</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] src/db/schema.sql</td><td class="r">~2,910</td><td class="r n">19m ago</td><td class="r inctx" style="color:var(--orange)">COMPACTED OUT</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <div class="pnl">
+              <div class="pnl-h">Tool Registry <span class="r">17 used &middot; 346 known</span></div>
+              <div class="trow"><span class="used">USED</span><span class="nm">Edit</span><span class="sp">&times;68 &nbsp; built-in</span></div>
+              <div class="trow"><span class="used">USED</span><span class="nm">Bash</span><span class="sp">&times;65 &nbsp; built-in</span></div>
+              <div class="trow"><span class="used">USED</span><span class="nm">Read</span><span class="sp">&times;47 &nbsp; built-in</span></div>
+              <div class="trow"><span class="used" style="border-color:var(--line);color:var(--text3)">DEFER</span><span class="nm" style="color:var(--text2)">notion-search</span><span class="sp">&times;0 &nbsp; mcp</span></div>
+              <p class="note">"Assumed" built-ins come from a static list. Used and deferred entries were observed in this session's transcript.</p>
+            </div>
+
+            <div class="pnl">
+              <div class="pnl-h">Clues <span class="r">4 open</span></div>
+              <div class="act"><span class="ic" style="color:var(--orange)">&#9650;</span><div class="bd"><div class="t1">Oversized tool result</div><div class="t2">package-lock.json read cost ~31.9k tokens</div></div></div>
+              <div class="act"><span class="ic" style="color:var(--amber)">&#9650;</span><div class="bd"><div class="t1">File loaded 4 times</div><div class="t2">src/billing/invoice.ts, ~16.4k total</div></div></div>
+              <div class="act"><span class="ic">&#9650;</span><div class="bd"><div class="t1">Compaction dropped 316k</div><div class="t2">auto trigger, 412k to 96k, 14m ago</div></div></div>
+            </div>
+
+            <div class="pnl">
+              <div class="pnl-h">Live Activity <span class="r">newest first</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Read result</div><div class="t2">src/billing/invoice.ts &nbsp; ~4,102</div></div><span class="ts">just now</span></div>
+              <div class="act"><span class="ic" style="color:var(--orange)">&#9670;</span><div class="bd"><div class="t1">Assistant turn: context at 379k</div><div class="t2">Read({"file_path":"src/billing&hellip;</div></div><span class="ts">just now</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Bash invoked</div><div class="t2">npm test</div></div><span class="ts">8s ago</span></div>
+              <div class="act" style="border-bottom:0"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Grep invoked</div><div class="t2">"prorate" in src/</div></div><span class="ts">44s ago</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="shot-foot">
+          NOTES &nbsp; Context totals come from the API usage numbers Claude Code records per assistant turn (observed); per entry sizes are chars/4 estimates. &nbsp;&middot;&nbsp; Maximum window is assumed: Claude Code does not expose it locally. &nbsp;&middot;&nbsp; ContextClues reads transcripts only. It has no access to the model's private reasoning, and inclusion between compactions is inferred from transcript order.
+        </div>
+      </div>
+    </div>
+    <p class="shot-cap">The full case file. One session, live, on localhost.</p>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="eyebrow">The problem</div>
+    <h2>You find out the window was full after it costs you.</h2>
+    <div class="prose">
+      <p>A long agent session fills its context window quietly. There is no gauge, no breakdown, and no warning. One accidental read of a lockfile can take a third of the window, and nothing tells you it happened. You are steering a process whose most important state variable is invisible.</p>
+      <p>When the window fills, the session compacts. Older material is summarized away and dropped. Work you assumed was still in context is gone, and the only signal is the agent starting to behave as if it forgot something. By then you have already paid for it: a repeated explanation, a wrong answer you trusted, a debugging cycle chasing a problem that was never in the code.</p>
+      <p><strong>ContextClues turns that black box into an instrument panel.</strong> It runs beside your session and answers the questions you currently have to guess at: how full is the window, what is taking up the room, what did compaction actually drop, and how long can I keep going.</p>
+    </div>
+  </section>
+
+  <!-- MECHANISM -->
+  <section id="how">
+    <div class="eyebrow">How it works</div>
+    <h2>It reads the files the agent already writes.</h2>
+    <div class="prose">
+      <p>Claude Code keeps a registry of running sessions and an append only transcript of every event on local disk. ContextClues watches those files, tail parses the transcript incrementally, indexes it into a local database, and streams updates to the dashboard over server sent events. Claude's files are opened read only and are never modified.</p>
+      <p>It deliberately does not install an agent hook. A hook would give push style events, but installing one edits your configuration, and this tool does not change your setup without being asked.</p>
+    </div>
+    <div class="flow">
+<pre>~/.claude/sessions/*.json      <b>&#9472;&#9472;&#9488;</b>                          <b>&#9484;&#9472;</b> local SQLite
+~/.claude/projects/**.jsonl    <b>&#9472;&#9472;&#9508;</b>&#9472;&#9472;&#9658; <i>collector</i> &#9472;&#9472;&#9658;&#9472;&#9472;<b>&#9508;</b>
+settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i>          <b>&#9492;&#9472;</b> event bus &#9472;&#9658; SSE &#9472;&#9658; dashboard</pre>
+    </div>
+  </section>
+
+  <!-- PANELS -->
+  <section id="panels">
+    <div class="eyebrow">What it shows</div>
+    <h2>Seven panels, one case file.</h2>
+    <p class="lead">Every session is a case file. Context entries are evidence. What the tool notices, it files as clues.</p>
+    <div class="cards">
+      <div class="card"><h3>Context Meter</h3><p>Tokens in the window from the API's own count, as a share of maximum, with cache breakdown and observation age.</p></div>
+      <div class="card"><h3>Context Trajectory</h3><p>Growth across every API request, with burn rate, projected runway in time and requests, and compaction boundaries marked.</p></div>
+      <div class="card"><h3>Composition</h3><p>What is occupying the window, stacked by source: your messages, replies, tool results, injected context, and system overhead.</p></div>
+      <div class="card"><h3>Evidence</h3><p>Every transcript record, searchable, with size, age, whether it is still in context, and why it is believed to be there.</p></div>
+      <div class="card"><h3>Tool Registry</h3><p>Every known tool with its provider, its status, where that knowledge came from, and how many times it was actually used.</p></div>
+      <div class="card"><h3>Live Activity</h3><p>Tool calls, file reads, results, compactions, and tool availability changes, streaming in as they happen.</p></div>
+      <div class="card"><h3>Clues</h3><p>Oversized results, files read repeatedly, exact compaction drops, unused tools, window pressure, and stale heavy entries.</p></div>
+    </div>
+  </section>
+
+  <!-- LOCAL AND SAFE -->
+  <section id="safe">
+    <div class="eyebrow">Local and safe</div>
+    <h2>Your transcripts never leave the machine.</h2>
+    <p class="lead">This tool reads the most sensitive text on your computer: your code, your prompts, and your command output. It is built so that none of it goes anywhere.</p>
+    <div class="safe">
+      <div class="safe-i"><h3>No network</h3><p>No cloud service, no account, no authentication, no telemetry. The dashboard is a localhost page and the process makes no outbound calls.</p></div>
+      <div class="safe-i"><h3>Read only</h3><p>Claude's session files are opened read only and are never written to. Nothing under your agent's configuration directory is created, edited, or deleted.</p></div>
+      <div class="safe-i"><h3>Secrets redacted</h3><p>API keys, tokens, JWTs, private keys, and secret style environment assignments are detected and scrubbed before any preview is stored or rendered.</p></div>
+      <div class="safe-i"><h3>Disposable state</h3><p>The tool's own index lives in a local folder you can delete at any time. It rebuilds itself from the transcripts on next run.</p></div>
+    </div>
+  </section>
+
+  <!-- HONESTY -->
+  <section id="honesty">
+    <div class="eyebrow">Honesty policy</div>
+    <h2>Every number says how it was obtained.</h2>
+    <div class="prose">
+      <p>A context dashboard is only useful if you can tell measurement from guesswork. Some of these figures are genuinely knowable and others are not, so nothing is presented as plain fact. Every value carries one of four confidence labels, visible in the interface, so you always know which one you are reading.</p>
+    </div>
+    <div class="conf">
+      <div class="conf-r"><div class="conf-t c-obs">Observed</div><div class="conf-d">Read directly from the agent's own artifacts: per turn token usage, compaction records with exact before and after totals, and tool availability changes. <b>The growth curve and burn rate are observed.</b></div></div>
+      <div class="conf-r"><div class="conf-t c-est">Estimated</div><div class="conf-d">Per entry sizes, using a characters divided by four heuristic. The transcript stores content, not per message token counts, so entry sizes are always approximations and are always marked as such.</div></div>
+      <div class="conf-r"><div class="conf-t c-inf">Inferred</div><div class="conf-d">Derived indirectly. System prompt overhead is the observed total minus the sum of estimates. <b>Runway is inferred</b>, because it extrapolates observed data forward, so the interface says "projected" and never says "will".</div></div>
+      <div class="conf-r"><div class="conf-t c-asm">Assumed</div><div class="conf-d">Static mappings that cannot be verified locally, such as which maximum context window a given model has. No local file exposes it, so it is mapped and labeled rather than presented as known.</div></div>
+    </div>
+    <div class="prose" style="margin-top:28px">
+      <p>The same care goes into the projection. Growth per request is strongly right skewed: most requests add a little, and an occasional large file read adds a lot. Runway is a question about cumulative growth, so the projection is driven by the mean rather than the median, because the mean counts large requests at the rate they actually occur. A median would describe a typical request while systematically under predicting how fast the window fills. The panel reports both, and when the average sits far above the typical request it says the session is spike dominated and widens the runway into a range.</p>
+      <p>ContextClues never claims access to the model's hidden reasoning, and it does not pretend to know exactly which messages survive between compactions. That is inference, and it is labeled as inference.</p>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="eyebrow">Install</div>
+    <h2>Four commands, no services, no config.</h2>
+    <p class="lead">Clone it, install it, run it. Then start a Claude Code session in another terminal and it appears automatically.</p>
+    <div class="steps">
+<pre><span class="c"># requires Node.js 22.5 or newer</span>
+<span class="d">$</span> git clone https://github.com/MaxwellVolz/contextclues.git
+<span class="d">$</span> cd contextclues
+<span class="d">$</span> npm install
+<span class="d">$</span> npm run dev
+
+<span class="c">&#8594; http://localhost:4310</span></pre>
+    </div>
+    <p class="req">
+      <b>Node.js 22.5+</b> &nbsp;uses the built in SQLite module, so there is nothing to compile.<br>
+      <b>A machine where Claude Code has run</b> &nbsp;it reads the session files that are already there.<br>
+      <b>Live sessions are auto detected</b> &nbsp;marked with a dot, updating in real time as the transcript grows.
+    </p>
+  </section>
+
+  <!-- CLOSE -->
+  <section class="close">
+    <h2>You cannot manage a context window you cannot see.</h2>
+    <a class="cta" href="https://github.com/MaxwellVolz/contextclues">GET CONTEXTCLUES &#8594;</a>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="mark">CONTEXT<span>CLUES</span></div>
+      <div class="sp"></div>
+      <a href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
+      <a href="https://github.com/MaxwellVolz/contextclues#readme">Docs</a>
+      <a href="https://github.com/MaxwellVolz/contextclues/blob/main/DISCOVERY.md">Discovery notes</a>
+    </div>
+    <p class="disc">An independent open source tool. Not affiliated with, endorsed by, or sponsored by Anthropic. Claude and Claude Code are trademarks of Anthropic. ContextClues reads local session files that Claude Code writes to your own disk, and sends nothing anywhere.</p>
+  </div>
+</footer>
+
+<script>
+document.getElementById('copy').addEventListener('click', function(){
+  var t = document.getElementById('cmd').textContent;
+  var b = this;
+  navigator.clipboard.writeText(t).then(function(){
+    b.textContent = 'COPIED';
+    setTimeout(function(){ b.textContent = 'COPY'; }, 1600);
+  }).catch(function(){ b.textContent = 'SELECT'; });
+});
+</script>
+
+</body>
+</html>
