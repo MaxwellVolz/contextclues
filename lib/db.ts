@@ -1,8 +1,9 @@
 // SQLite persistence via Node's built-in node:sqlite (no native build step).
-// ContextClues' own state lives in ./.data — Claude's files are never written.
+// ContextClues' own state lives in ~/.contextclues. Claude's files are never written.
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import type { NormalizedEvent } from "./transcript.ts";
 
@@ -289,7 +290,10 @@ declare global {
 
 export function getDb(): Db {
   if (!globalThis.__contextcluesDb) {
-    const dataDir = process.env.CONTEXTCLUES_DATA_DIR ?? join(process.cwd(), ".data");
+    // Keyed to the home directory, not the cwd: when ContextClues is installed
+    // globally it can be started from anywhere, and it must not scatter an index
+    // into whatever directory the user happened to be in.
+    const dataDir = process.env.CONTEXTCLUES_DATA_DIR ?? join(homedir(), ".contextclues");
     globalThis.__contextcluesDb = new Db(dataDir);
   }
   return globalThis.__contextcluesDb;

@@ -1,13 +1,49 @@
 {
   "name": "contextclues",
   "version": "0.1.0",
-  "private": true,
+  "description": "A local, read-only dashboard showing what a running Claude Code session has in its context window: observed token usage, growth trajectory, composition, evidence, tools, and clues.",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "context-window",
+    "tokens",
+    "observability",
+    "llm",
+    "ai-agent",
+    "dashboard",
+    "cli"
+  ],
+  "homepage": "https://ctxclues.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaxwellVolz/contextclues.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MaxwellVolz/contextclues/issues"
+  },
+  "license": "MIT",
+  "author": "Maxwell Volz",
   "type": "module",
+  "bin": {
+    "contextclues": "bin/contextclues.js"
+  },
+  "files": [
+    "bin/",
+    ".next/",
+    "!.next/cache/",
+    "next.config.mjs",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
-    "dev": "next dev -p 4310",
+    "dev": "next dev -p 4310 -H 127.0.0.1",
     "build": "next build",
-    "start": "next start -p 4310",
-    "test": "node --experimental-strip-types --test test/*.test.ts"
+    "start": "next start -p 4310 -H 127.0.0.1",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "prepublishOnly": "rm -rf .next && npm run build && npm test"
   },
   "dependencies": {
     "chokidar": "^4.0.3",
