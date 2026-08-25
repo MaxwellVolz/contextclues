@@ -1,0 +1,105 @@
+<!doctype html>
+<!-- Source for site/og.png. Render at 1200x630 and screenshot .og -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0B0A09}
+.og{
+  width:1200px; height:630px; position:relative; overflow:hidden;
+  background:#131110; color:#E9E3D9;
+  font-family:"Inter",-apple-system,sans-serif;
+  padding:64px 68px; display:flex; flex-direction:column;
+}
+.og::before{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(900px 460px at 22% -10%, rgba(224,172,75,.13), transparent 70%);
+}
+.og::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:7px;
+  background:linear-gradient(90deg,#E0AC4B 0%, #E0AC4B 37.9%, #2C2521 37.9%, #2C2521 100%);
+}
+.r{position:relative; z-index:1}
+.mark{font-family:"JetBrains Mono",monospace; font-size:21px; letter-spacing:.26em; font-weight:700}
+.mark span{color:#E0AC4B}
+.eye{
+  font-family:"JetBrains Mono",monospace; font-size:14px; letter-spacing:.2em;
+  color:#6E6459; text-transform:uppercase; margin-top:44px;
+}
+h1{
+  font-size:64px; line-height:1.1; font-weight:600; letter-spacing:-.022em;
+  margin-top:18px; max-width:17ch;
+}
+h1 em{font-style:normal; color:#E0AC4B}
+p{font-size:23px; line-height:1.5; color:#A79C8D; margin-top:22px; max-width:44ch}
+.foot{margin-top:auto; display:flex; align-items:center; gap:13px}
+.chip{
+  font-family:"JetBrains Mono",monospace; font-size:14.5px; letter-spacing:.07em;
+  color:#A79C8D; border:1px solid #2C2521; border-radius:999px; padding:8px 17px;
+}
+.chip b{color:#6FBF8B; font-weight:400}
+.meter{
+  position:absolute; right:68px; top:132px; z-index:1;
+  width:330px; background:#1F1B18; border:1px solid #2C2521; border-radius:13px; padding:22px;
+  font-family:"JetBrains Mono",monospace;
+}
+.mh{
+  font-size:12px; letter-spacing:.16em; color:#A79C8D; text-transform:uppercase;
+  display:flex; align-items:center; gap:9px; margin-bottom:17px;
+}
+.mh::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid #E0AC4B}
+.tag{
+  margin-left:auto; font-size:10.5px; letter-spacing:.14em; border:1px solid #33553F;
+  color:#6FBF8B; padding:3px 8px; border-radius:5px;
+}
+.big{font-size:57px; font-weight:700; letter-spacing:-.02em; line-height:1}
+.big i{font-style:normal; color:#E0AC4B}
+.sub{font-size:13.5px; color:#A79C8D; text-align:right; line-height:1.45}
+.row{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:16px}
+.bar{height:9px; background:#131110; border:1px solid #231D19; border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; width:37.9%; background:linear-gradient(90deg,#7A5D26,#E0AC4B)}
+.kv{display:flex; font-size:12px; margin-top:11px; color:#A79C8D; gap:9px}
+.kv .k{color:#6E6459}
+.kv .f{flex:1; border-bottom:1px dotted #2A241F; transform:translateY(-4px)}
+.kv .v{color:#E9E3D9}
+svg{display:block; width:100%; height:62px; margin-top:16px}
+</style>
+</head>
+<body>
+<div class="og">
+  <div class="r mark">CONTEXT<span>CLUES</span></div>
+  <div class="r eye">Local only &middot; Read only &middot; Open source</div>
+  <h1 class="r">Your agent's context window is a <em>black box</em>.</h1>
+  <p class="r">See what is in it, what compaction dropped, and how much working room is left.</p>
+  <div class="r foot">
+    <span class="chip"><b>&#9679;</b> No cloud</span>
+    <span class="chip"><b>&#9679;</b> No telemetry</span>
+    <span class="chip"><b>&#9679;</b> Never writes to ~/.claude</span>
+    <span class="chip" style="color:#E0AC4B;border-color:#7A5D26">ctxclues.com</span>
+  </div>
+
+  <div class="meter">
+    <div class="mh">Context Meter <span class="tag">OBSERVED</span></div>
+    <div class="row">
+      <div class="big">37.9<i>%</i></div>
+      <div class="sub">379k / 1.00M<br><span style="color:#6E6459;font-size:11px;letter-spacing:.12em">TOKENS</span></div>
+    </div>
+    <div class="bar"><i></i></div>
+    <svg viewBox="0 0 240 62" preserveAspectRatio="none">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E0AC4B" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#E0AC4B" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="M0,58 L18,54 L36,50 L54,46 L72,42 L86,36 L86,46 L104,42 L122,38 L140,33 L158,28 L176,23 L194,18 L212,13 L240,8 L240,62 L0,62 Z" fill="url(#g)"/>
+      <path d="M0,58 L18,54 L36,50 L54,46 L72,42 L86,36 L86,46 L104,42 L122,38 L140,33 L158,28 L176,23 L194,18 L212,13 L240,8"
+            fill="none" stroke="#E0AC4B" stroke-width="1.7" stroke-linejoin="round"/>
+      <line x1="86" y1="3" x2="86" y2="62" stroke="#6E6459" stroke-width="1" stroke-dasharray="2 3"/>
+    </svg>
+    <div class="kv"><span class="k">burn rate</span><span class="f"></span><span class="v">~2.0k/req</span></div>
+    <div class="kv"><span class="k">runway</span><span class="f"></span><span class="v">2.1 h</span></div>
+  </div>
+</div>
+</body>
+</html>

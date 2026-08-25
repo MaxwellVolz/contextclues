@@ -2,12 +2,93 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ContextClues: context forensics for Claude Code</title>
-<meta name="description" content="A local, read-only dashboard that shows what a running Claude Code session has in its context window: how full it is, what is in it, and how much working room is left.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ContextClues: see your Claude Code context window</title>
+<meta name="description" content="A local, read-only dashboard for Claude Code. See how full the context window is, what is filling it, and how much working room is left. No cloud, no telemetry.">
+<link rel="canonical" href="https://ctxclues.com/">
+<meta name="theme-color" content="#131110">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Maxwell Volz">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="keywords" content="Claude Code, context window, token usage, LLM observability, AI agent tooling, context compaction, developer dashboard">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ContextClues">
+<meta property="og:url" content="https://ctxclues.com/">
+<meta property="og:title" content="ContextClues: see your Claude Code context window">
+<meta property="og:description" content="A local, read-only dashboard for Claude Code. See how full the context window is, what is filling it, and how much working room is left before it compacts.">
+<meta property="og:image" content="https://ctxclues.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ContextClues dashboard showing a context meter at 37.9 percent of a one million token window.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ContextClues: see your Claude Code context window">
+<meta name="twitter:description" content="A local, read-only dashboard for Claude Code. See what is in the context window, what compaction dropped, and how much room is left.">
+<meta name="twitter:image" content="https://ctxclues.com/og.png">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"SoftwareApplication",
+      "name":"ContextClues",
+      "url":"https://ctxclues.com/",
+      "applicationCategory":"DeveloperApplication",
+      "applicationSubCategory":"Observability",
+      "operatingSystem":"macOS, Linux, Windows",
+      "description":"A local, read-only forensic dashboard that shows what a running Claude Code session has in its context window: observed token usage, growth trajectory with burn rate and projected runway, composition by source, searchable evidence, tool registry, live activity, and actionable clues.",
+      "softwareRequirements":"Node.js 22.5 or newer",
+      "license":"https://github.com/MaxwellVolz/contextclues",
+      "codeRepository":"https://github.com/MaxwellVolz/contextclues",
+      "isAccessibleForFree":true,
+      "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
+      "featureList":[
+        "Context meter with observed token counts",
+        "Context growth trajectory with burn rate and projected runway",
+        "Composition breakdown by source",
+        "Searchable evidence log with inclusion status",
+        "Tool registry with provider and usage counts",
+        "Live activity stream",
+        "Clue engine for oversized results and repeated file loads"
+      ],
+      "author":{"@type":"Person","name":"Maxwell Volz","url":"https://github.com/MaxwellVolz"}
+    },
+    {
+      "@type":"FAQPage",
+      "mainEntity":[
+        {
+          "@type":"Question",
+          "name":"Does ContextClues send my code or prompts anywhere?",
+          "acceptedAnswer":{"@type":"Answer","text":"No. Everything stays on your machine. There is no cloud service, no account, no authentication, and no telemetry. The dashboard runs on localhost and the process makes no outbound calls."}
+        },
+        {
+          "@type":"Question",
+          "name":"Does it modify my Claude Code configuration?",
+          "acceptedAnswer":{"@type":"Answer","text":"No. Claude's session files are opened read only and are never written to. ContextClues deliberately does not install an agent hook, because installing one would edit your configuration without being asked."}
+        },
+        {
+          "@type":"Question",
+          "name":"How accurate are the token numbers?",
+          "acceptedAnswer":{"@type":"Answer","text":"Every number carries a confidence label. Observed values are read directly from the API usage counts Claude Code records per assistant turn. Per entry sizes are estimated with a characters divided by four heuristic. System prompt overhead and runway are inferred. The maximum context window is assumed, because no local file exposes it."}
+        },
+        {
+          "@type":"Question",
+          "name":"What do I need to run it?",
+          "acceptedAnswer":{"@type":"Answer","text":"Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Clone the repository, run npm install, then npm run dev."}
+        }
+      ]
+    }
+  ]
+}
+</script>
 <style>
 :root{
   --bg:#131110; --bg2:#191614; --bg3:#1F1B18; --bg4:#241F1B;
@@ -20,17 +101,29 @@
   --maxw:1080px;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%; scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:var(--sans); font-size:16px; line-height:1.65;
-  -webkit-font-smoothing:antialiased;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
 }
+:focus-visible{outline:2px solid var(--amber); outline-offset:3px; border-radius:3px}
+.skip{
+  position:absolute; left:-9999px; top:0; z-index:50;
+  background:var(--amber); color:#1A1509; font-family:var(--mono); font-size:12px;
+  padding:10px 16px; border-radius:0 0 6px 0;
+}
+.skip:focus{left:0; text-decoration:none}
 body::before{
   content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:radial-gradient(900px 500px at 50% -8%, rgba(224,172,75,.07), transparent 70%);
 }
-.wrap{position:relative; z-index:1; max-width:var(--maxw); margin:0 auto; padding:0 24px}
+.wrap{
+  position:relative; z-index:1; max-width:var(--maxw); margin:0 auto;
+  padding-left:max(24px, env(safe-area-inset-left));
+  padding-right:max(24px, env(safe-area-inset-right));
+}
 a{color:var(--amber); text-decoration:none}
 a:hover{text-decoration:underline}
 h1,h2,h3{margin:0; font-weight:600; letter-spacing:-.01em; line-height:1.2}
@@ -42,21 +135,28 @@ nav{
   background:rgba(19,17,16,.86); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line-soft);
 }
-.nav-in{max-width:var(--maxw); margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:16px}
-.mark{font-family:var(--mono); font-size:13px; letter-spacing:.22em; font-weight:700; color:var(--text)}
+.nav-in{
+  max-width:var(--maxw); margin:0 auto; display:flex; align-items:center; gap:16px;
+  padding:10px max(24px, env(safe-area-inset-right)) 10px max(24px, env(safe-area-inset-left));
+}
+.mark{font-family:var(--mono); font-size:13px; letter-spacing:.22em; font-weight:700; color:var(--text); white-space:nowrap}
 .mark span{color:var(--amber)}
 .nav-sp{flex:1}
-.nav-a{font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:var(--text2); text-decoration:none}
+.nav-a{
+  font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:var(--text2);
+  text-decoration:none; display:inline-flex; align-items:center; min-height:44px;
+}
 .nav-a:hover{color:var(--text); text-decoration:none}
 .nav-btn{
   font-family:var(--mono); font-size:12px; letter-spacing:.06em;
   border:1px solid var(--amber-dim); color:var(--amber);
-  padding:6px 13px; border-radius:6px; text-decoration:none; white-space:nowrap;
+  padding:0 14px; border-radius:6px; text-decoration:none; white-space:nowrap;
+  display:inline-flex; align-items:center; min-height:36px;
 }
 .nav-btn:hover{background:rgba(224,172,75,.09); text-decoration:none}
 
 /* shared */
-section{padding:76px 0; border-top:1px solid var(--line-soft)}
+section{padding:clamp(52px,7vw,76px) 0; border-top:1px solid var(--line-soft); scroll-margin-top:72px}
 section:first-of-type{border-top:0}
 .eyebrow{
   font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--text3);
@@ -70,22 +170,22 @@ section:first-of-type{border-top:0}
 h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
 
 /* hero */
-.hero{padding:72px 0 56px}
-.hero h1{font-size:clamp(32px,5.4vw,52px); max-width:19ch; margin-bottom:22px}
+.hero{padding:clamp(40px,7vw,72px) 0 clamp(36px,5vw,56px)}
+.hero h1{font-size:clamp(30px,6.4vw,52px); max-width:19ch; margin-bottom:clamp(16px,2.4vw,22px); text-wrap:balance}
 .hero h1 em{font-style:normal; color:var(--amber)}
-.hero .lead{font-size:19px; max-width:62ch}
-.hero-sup{margin-top:14px; font-family:var(--mono); font-size:13px; color:var(--text3); max-width:62ch}
+.hero .lead{font-size:clamp(16.5px,2vw,19px); max-width:62ch; text-wrap:pretty}
+.hero-sup{margin-top:14px; font-family:var(--mono); font-size:clamp(12px,1.4vw,13px); color:var(--text3); max-width:62ch}
 .cmd{
-  margin-top:30px; display:flex; align-items:center; gap:12px;
+  margin-top:clamp(24px,3vw,30px); display:flex; align-items:center; gap:12px;
   background:var(--bg2); border:1px solid var(--line); border-radius:9px;
-  padding:13px 15px; max-width:560px; font-family:var(--mono); font-size:13.5px;
+  padding:13px 15px; max-width:600px; font-family:var(--mono); font-size:13.5px;
 }
-.cmd code{color:var(--text); overflow-x:auto; white-space:nowrap; flex:1}
-.cmd .dollar{color:var(--amber); flex:none}
+.cmd code{color:var(--text); overflow-x:auto; white-space:nowrap; flex:1; scrollbar-width:thin}
+.cmd .dollar{color:var(--amber); flex:none; align-self:flex-start; line-height:1.6}
 .copy{
   flex:none; font-family:var(--mono); font-size:11px; letter-spacing:.07em;
   background:transparent; border:1px solid var(--line); color:var(--text2);
-  padding:5px 10px; border-radius:5px; cursor:pointer;
+  padding:0 12px; min-height:34px; border-radius:5px; cursor:pointer;
 }
 .copy:hover{border-color:var(--amber-dim); color:var(--amber)}
 .badges{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
@@ -96,7 +196,13 @@ h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
 .badge b{color:var(--green); font-weight:400}
 
 /* ── dashboard mockup ── */
-.shot-outer{overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch}
+.shot-wrap{position:relative}
+.shot-outer{overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
+.shot-hint{
+  display:none; align-items:center; gap:7px; margin-bottom:10px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--text3);
+}
+.shot-hint span{color:var(--amber)}
 .shot{
   min-width:940px; background:var(--bg2); border:1px solid var(--line);
   border-radius:12px; padding:12px; font-family:var(--mono);
@@ -177,7 +283,7 @@ td.r{text-align:right}
 .shot-cap{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:16px}
 
 /* panels grid */
-.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:14px; margin-top:34px}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(268px,100%),1fr)); gap:14px; margin-top:34px}
 .card{background:var(--bg2); border:1px solid var(--line-soft); border-radius:10px; padding:22px}
 .card h3{font-family:var(--mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--amber); margin-bottom:9px}
 .card p{font-size:14px; color:var(--text2); line-height:1.6}
@@ -195,7 +301,7 @@ td.r{text-align:right}
 .flow pre i{color:var(--green); font-style:normal}
 
 /* safety list */
-.safe{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:24px; margin-top:32px}
+.safe{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr)); gap:24px; margin-top:32px}
 .safe-i h3{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px}
 .safe-i h3::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--green); flex:none}
 .safe-i p{font-size:14px; color:var(--text2); line-height:1.6}
@@ -210,6 +316,15 @@ td.r{text-align:right}
 .conf-d{font-size:14px; color:var(--text2); line-height:1.6}
 .conf-d b{color:var(--text); font-weight:500}
 
+/* faq */
+.faq{margin:32px 0 0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:14px}
+.faq-i{background:var(--bg2); border:1px solid var(--line-soft); border-radius:10px; padding:20px 22px}
+.faq dt{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.03em; color:var(--amber);
+  line-height:1.5; margin-bottom:9px;
+}
+.faq dd{margin:0; font-size:14.5px; color:var(--text2); line-height:1.6}
+
 /* install */
 .steps{margin-top:30px; background:var(--bg2); border:1px solid var(--line); border-radius:10px; overflow:hidden}
 .steps pre{
@@ -218,7 +333,9 @@ td.r{text-align:right}
 }
 .steps pre .c{color:var(--text3)}
 .steps pre .d{color:var(--amber)}
-.req{margin-top:20px; font-family:var(--mono); font-size:12px; color:var(--text3); line-height:1.8}
+.req{margin:20px 0 0; padding:0; list-style:none; font-family:var(--mono); font-size:12px; color:var(--text3); line-height:1.8}
+.req li{position:relative; padding-left:16px; margin-top:7px}
+.req li::before{content:"\2192"; position:absolute; left:0; color:var(--amber-dim)}
 .req b{color:var(--text2); font-weight:400}
 
 /* close */
@@ -236,28 +353,111 @@ footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
 .foot a{color:var(--text2)}
 .disc{margin-top:16px; font-family:var(--mono); font-size:10.5px; color:var(--text3); line-height:1.7; max-width:76ch}
 
+/* ── tablet ── */
+@media (max-width:900px){
+  .conf-r{grid-template-columns:130px 1fr; gap:16px; padding:16px 18px}
+  .cards{gap:12px}
+}
+
+/* ── mobile ── */
 @media (max-width:760px){
-  section{padding:56px 0}
-  .hero{padding:48px 0 40px}
-  .conf-r{grid-template-columns:1fr; gap:8px}
+  .wrap{
+    padding-left:max(20px, env(safe-area-inset-left));
+    padding-right:max(20px, env(safe-area-inset-right));
+  }
+  .nav-in{
+    gap:12px;
+    padding-left:max(20px, env(safe-area-inset-left));
+    padding-right:max(20px, env(safe-area-inset-right));
+  }
   .nav-a.hide-s{display:none}
+  .mark{font-size:12px; letter-spacing:.18em}
+  section{scroll-margin-top:78px}
+
+  /* command block wraps instead of hiding most of the command */
+  .cmd{
+    flex-wrap:wrap; align-items:flex-start; gap:10px;
+    padding:14px; font-size:12.5px; line-height:1.6;
+  }
+  .cmd code{
+    white-space:pre-wrap; word-break:normal; overflow-wrap:anywhere; overflow-x:visible;
+    flex:1 1 0; order:2; min-width:0;
+  }
+  .cmd .dollar{order:1; line-height:1.6; flex:none}
+  .copy{order:3; flex:1 1 100%; min-height:42px; font-size:11.5px}
+
+  .badges{gap:7px}
+  .badge{font-size:10.5px; padding:5px 10px}
+
+  /* dashboard mockup: horizontal scroll, made obvious */
+  .shot-hint{display:flex}
+  .shot-outer{
+    margin-left:calc(-1 * max(20px, env(safe-area-inset-left)));
+    margin-right:calc(-1 * max(20px, env(safe-area-inset-right)));
+    padding-left:max(20px, env(safe-area-inset-left));
+    padding-right:max(20px, env(safe-area-inset-right));
+  }
+  .shot-cap{margin-top:12px; font-size:10.5px}
+
+  /* readable body copy */
+  .lead{font-size:16px}
+  .prose{font-size:15.5px}
+  .card{padding:18px}
+  .card p{font-size:14.5px}
+  .safe{gap:20px}
+  .safe-i p{font-size:14.5px}
+
+  .conf{margin-top:26px}
+  .conf-r{grid-template-columns:1fr; gap:7px; padding:16px 18px}
+  .conf-d{font-size:14.5px}
+
+  .flow{padding:14px}
+  .flow pre{font-size:10.5px}
+  /* wrap the install commands so no URL is cut off */
+  /* wrap the install commands so no URL is cut off */
+  .steps pre{
+    padding:16px; font-size:12px; line-height:1.85;
+    white-space:pre-wrap; overflow-wrap:anywhere;
+  }
+  .req li{font-size:12px; line-height:1.7}
+  .req b{display:block; color:var(--amber); margin-bottom:2px}
+
+  .close{padding:60px 0}
+  .cta{display:block; text-align:center; padding:15px 24px}
+  .foot{gap:12px 18px}
+  .foot .sp{flex-basis:100%; height:0}
+}
+
+/* ── small phones ── */
+@media (max-width:380px){
+  .wrap,.nav-in{padding-left:16px; padding-right:16px}
+  /* the mockup bleeds to the edge, so its negative margin must match .wrap padding */
+  .shot-outer{
+    margin-left:-16px; margin-right:-16px;
+    padding-left:16px; padding-right:16px;
+  }
+  .badge{font-size:10px; padding:4px 9px}
+  .cmd{font-size:11.5px}
 }
 </style>
 </head>
 <body>
 
-<nav>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav aria-label="Primary">
   <div class="nav-in">
     <div class="mark">CONTEXT<span>CLUES</span></div>
     <div class="nav-sp"></div>
     <a class="nav-a hide-s" href="#panels">What it shows</a>
     <a class="nav-a hide-s" href="#honesty">Honesty policy</a>
+    <a class="nav-a hide-s" href="#faq">FAQ</a>
     <a class="nav-a" href="#install">Install</a>
     <a class="nav-btn" href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
   </div>
 </nav>
 
-<div class="wrap">
+<main id="main" class="wrap">
 
   <!-- HERO -->
   <section class="hero">
@@ -282,8 +482,10 @@ footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
 
   <!-- MOCKUP -->
   <section style="padding-top:0;border-top:0">
+    <div class="shot-wrap">
+    <p class="shot-hint"><span>&#8646;</span> Swipe to explore the full dashboard</p>
     <div class="shot-outer">
-      <div class="shot">
+      <div class="shot" role="img" aria-label="The ContextClues dashboard: a context meter reading 37.9 percent of a one million token window, a context growth curve with burn rate and projected runway, a composition breakdown by source, a searchable evidence table showing which entries are in context and which were compacted out, a tool registry, a clues panel, and a live activity stream.">
 
         <div class="shot-bar">
           <div class="shot-mark">CONTEXT<span>CLUES</span></div>
@@ -408,6 +610,7 @@ footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
         </div>
       </div>
     </div>
+    </div>
     <p class="shot-cap">The full case file. One session, live, on localhost.</p>
   </section>
 
@@ -499,11 +702,35 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
 
 <span class="c">&#8594; http://localhost:4310</span></pre>
     </div>
-    <p class="req">
-      <b>Node.js 22.5+</b> &nbsp;uses the built in SQLite module, so there is nothing to compile.<br>
-      <b>A machine where Claude Code has run</b> &nbsp;it reads the session files that are already there.<br>
-      <b>Live sessions are auto detected</b> &nbsp;marked with a dot, updating in real time as the transcript grows.
-    </p>
+    <ul class="req">
+      <li><b>Node.js 22.5+</b> uses the built in SQLite module, so there is nothing to compile.</li>
+      <li><b>A machine where Claude Code has run</b> it reads the session files that are already there.</li>
+      <li><b>Live sessions are auto detected</b> marked with a dot, updating in real time as the transcript grows.</li>
+    </ul>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="eyebrow">Questions</div>
+    <h2>The four things people ask first.</h2>
+    <dl class="faq">
+      <div class="faq-i">
+        <dt>Does ContextClues send my code or prompts anywhere?</dt>
+        <dd>No. Everything stays on your machine. There is no cloud service, no account, no authentication, and no telemetry. The dashboard runs on localhost and the process makes no outbound calls.</dd>
+      </div>
+      <div class="faq-i">
+        <dt>Does it modify my Claude Code configuration?</dt>
+        <dd>No. Claude's session files are opened read only and are never written to. ContextClues deliberately does not install an agent hook, because installing one would edit your configuration without being asked.</dd>
+      </div>
+      <div class="faq-i">
+        <dt>How accurate are the token numbers?</dt>
+        <dd>Every number carries a confidence label. Observed values are read directly from the API usage counts Claude Code records per assistant turn. Per entry sizes are estimated with a characters divided by four heuristic. System prompt overhead and runway are inferred. The maximum context window is assumed, because no local file exposes it.</dd>
+      </div>
+      <div class="faq-i">
+        <dt>What do I need to run it?</dt>
+        <dd>Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Clone the repository, run npm install, then npm run dev.</dd>
+      </div>
+    </dl>
   </section>
 
   <!-- CLOSE -->
@@ -512,7 +739,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
     <a class="cta" href="https://github.com/MaxwellVolz/contextclues">GET CONTEXTCLUES &#8594;</a>
   </section>
 
-</div>
+</main>
 
 <footer>
   <div class="wrap">
