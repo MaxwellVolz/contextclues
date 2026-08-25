@@ -178,10 +178,14 @@ h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
 .cmd{
   margin-top:clamp(24px,3vw,30px); display:flex; align-items:center; gap:12px;
   background:var(--bg2); border:1px solid var(--line); border-radius:9px;
-  padding:13px 15px; max-width:600px; font-family:var(--mono); font-size:13.5px;
+  padding:14px 16px; max-width:660px; font-family:var(--mono); font-size:13px;
 }
-.cmd code{color:var(--text); overflow-x:auto; white-space:nowrap; flex:1; scrollbar-width:thin}
-.cmd .dollar{color:var(--amber); flex:none; align-self:flex-start; line-height:1.6}
+.cmd code{
+  color:var(--text); flex:1 1 0; min-width:0; line-height:1.65;
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+.cmd .dollar{color:var(--amber); flex:none; align-self:flex-start; line-height:1.65}
+.copy{align-self:flex-start}
 .copy{
   flex:none; font-family:var(--mono); font-size:11px; letter-spacing:.07em;
   background:transparent; border:1px solid var(--line); color:var(--text2);
@@ -197,90 +201,152 @@ h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
 
 /* ── dashboard mockup ── */
 .shot-wrap{position:relative}
-.shot-outer{overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
+.shot-outer{overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
 .shot-hint{
   display:none; align-items:center; gap:7px; margin-bottom:10px;
   font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--text3);
 }
 .shot-hint span{color:var(--amber)}
+
+/* widen past the text column on large screens so the shot can breathe */
+@media (min-width:1180px){
+  .shot-sec{
+    width:min(1240px, calc(100vw - 40px));
+    margin-left:50%; transform:translateX(-50%);
+  }
+}
+/* the mockup keeps its design width and scrolls, rather than compressing
+   the evidence previews into ellipses */
+@media (max-width:1279px){
+  .shot-hint{display:flex}
+}
+
 .shot{
-  min-width:940px; background:var(--bg2); border:1px solid var(--line);
-  border-radius:12px; padding:12px; font-family:var(--mono);
-  box-shadow:0 24px 60px -20px rgba(0,0,0,.7);
+  min-width:1240px; background:var(--bg2); border:1px solid var(--line);
+  border-radius:14px; padding:14px; font-family:var(--mono);
+  box-shadow:0 30px 70px -26px rgba(0,0,0,.8);
 }
 .shot-bar{
-  display:flex; align-items:center; gap:14px; padding:9px 12px; margin-bottom:11px;
-  background:var(--bg3); border:1px solid var(--line-soft); border-radius:8px; font-size:11px;
+  display:flex; align-items:center; gap:13px; padding:10px 14px; margin-bottom:12px;
+  background:var(--bg3); border:1px solid var(--line-soft); border-radius:9px; font-size:11.5px;
 }
-.shot-mark{font-size:11px; letter-spacing:.2em; font-weight:700}
+.shot-mark{font-size:11.5px; letter-spacing:.2em; font-weight:700; white-space:nowrap}
 .shot-mark span{color:var(--amber)}
-.dim{color:var(--text3)}
+.dim{color:var(--text3); white-space:nowrap}
 .pill{
-  border:1px solid var(--line); border-radius:6px; padding:3px 10px;
+  border:1px solid var(--line); border-radius:6px; padding:4px 11px; white-space:nowrap;
   color:var(--text2); background:var(--bg4);
 }
-.pill.live{border-color:#33553F; color:var(--green); background:rgba(111,191,139,.06)}
+.pill.live{border-color:#33553F; color:var(--green); background:rgba(111,191,139,.07)}
 .dot{display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--green); margin-right:6px; vertical-align:middle}
-.grid3{display:grid; grid-template-columns:266px 1fr 288px; gap:11px}
-.pnl{background:var(--bg3); border:1px solid var(--line-soft); border-radius:8px; padding:11px}
-.pnl+.pnl{margin-top:11px}
-.pnl-h{display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:.15em; color:var(--text2); text-transform:uppercase; margin-bottom:12px}
+
+.grid3{display:grid; grid-template-columns:274px minmax(0,1fr) 274px; gap:12px; align-items:stretch}
+.col{display:flex; flex-direction:column; gap:12px; min-width:0}
+.pnl{
+  background:var(--bg3); border:1px solid var(--line-soft); border-radius:9px;
+  padding:13px; min-width:0;
+}
+.pnl.grow{flex:1; display:flex; flex-direction:column}
+.pnl-h{
+  display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:.14em;
+  color:var(--text2); text-transform:uppercase; margin-bottom:13px; white-space:nowrap;
+}
 .pnl-h::before{content:""; width:5px; height:5px; border-radius:50%; border:1px solid var(--amber); flex:none}
-.pnl-h .r{margin-left:auto; letter-spacing:.04em; color:var(--text3); text-transform:none; font-size:10px}
+.pnl-h .r{margin-left:auto; letter-spacing:.03em; color:var(--text3); text-transform:none; font-size:10.5px}
 .tag{
-  font-size:9px; letter-spacing:.14em; border:1px solid #33553F; color:var(--green);
-  padding:2px 6px; border-radius:4px; text-transform:uppercase;
+  font-size:9.5px; letter-spacing:.13em; border:1px solid #33553F; color:var(--green);
+  padding:2px 7px; border-radius:4px; text-transform:uppercase;
 }
-.big{font-size:38px; font-weight:700; letter-spacing:-.02em; line-height:1}
-.meter-top{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:12px}
-.meter-r{text-align:right; font-size:11px; color:var(--text2); line-height:1.5}
-.bar{height:7px; background:var(--bg); border-radius:3px; overflow:hidden; border:1px solid var(--line-soft)}
-.bar i{display:block; height:100%; width:37.9%; background:linear-gradient(90deg,var(--amber-dim),var(--amber))}
-.ticks{display:flex; font-size:9px; color:var(--text3); margin-top:3px}
-.ticks i{font-style:normal}
-.spark{margin:12px 0 0; background:var(--bg); border:1px solid var(--line-soft); border-radius:6px; padding:8px}
-.spark svg{display:block; width:100%; height:56px}
-.spark-l{display:flex; justify-content:space-between; font-size:9px; color:var(--text3); margin-top:5px}
-.kv{display:flex; align-items:baseline; gap:8px; font-size:10.5px; margin-top:7px; color:var(--text2)}
+
+/* context meter */
+.big{font-size:42px; font-weight:700; letter-spacing:-.025em; line-height:1}
+.meter-top{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:13px}
+.meter-r{text-align:right; font-size:11.5px; color:var(--text2); line-height:1.45; white-space:nowrap}
+.meter-r em{font-style:normal; display:block; font-size:9.5px; letter-spacing:.13em; color:var(--text3); margin-top:2px}
+.bar{position:relative; height:9px; background:var(--bg); border-radius:4px; border:1px solid var(--line-soft)}
+.bar i{display:block; height:100%; width:37.9%; border-radius:3px; background:linear-gradient(90deg,#8A6A2C,var(--amber))}
+.bar u{position:absolute; top:-2px; bottom:-2px; width:1px; background:var(--line); text-decoration:none}
+.bar-l{display:flex; justify-content:space-between; font-size:9.5px; color:var(--text3); margin-top:5px}
+
+.spark{margin-top:13px; background:var(--bg); border:1px solid var(--line-soft); border-radius:7px; padding:9px 10px 7px}
+.spark svg{display:block; width:100%; height:82px}
+.spark-l{display:flex; justify-content:space-between; font-size:9.5px; color:var(--text3); margin-top:6px}
+
+.kv{display:flex; align-items:baseline; gap:8px; font-size:11px; margin-top:8px; color:var(--text2); white-space:nowrap}
 .kv .k{color:var(--text3)}
-.kv .fill{flex:1; border-bottom:1px dotted #2A241F; transform:translateY(-3px)}
+.kv .fill{flex:1; border-bottom:1px dotted #2E2721; transform:translateY(-3px); min-width:8px}
 .kv .v{color:var(--text)}
-.note{font-size:9.5px; color:var(--text3); line-height:1.55; margin-top:12px; border-top:1px solid var(--line-soft); padding-top:9px}
-.stack{display:flex; height:16px; border-radius:4px; overflow:hidden; margin-top:2px}
-.stack i{display:block; height:100%}
-.legend{display:flex; flex-wrap:wrap; gap:9px; margin-top:9px; font-size:9.5px; color:var(--text2)}
-.legend span{display:flex; align-items:center; gap:5px}
-.legend b{width:7px; height:7px; border-radius:2px; display:inline-block}
+.kv .v.hi{color:var(--amber)}
+.note{
+  font-size:10px; color:var(--text3); line-height:1.6; margin-top:13px;
+  border-top:1px solid var(--line-soft); padding-top:10px; white-space:normal;
+}
+
+/* composition */
+.stack{display:flex; height:22px; border-radius:5px; overflow:hidden; margin-bottom:10px}
+.stack i{
+  display:block; height:100%; font-style:normal; font-size:9px; color:rgba(0,0,0,.62);
+  display:flex; align-items:center; justify-content:center; font-weight:700; letter-spacing:.02em;
+}
+.legend{font-size:10.5px; color:var(--text2)}
+.legend span{display:flex; align-items:center; gap:8px; white-space:nowrap; padding:6px 0}
+.legend span+span{border-top:1px solid rgba(44,37,33,.45)}
+.legend b{width:8px; height:8px; border-radius:2px; display:inline-block; flex:none}
+.legend em{font-style:normal; margin-left:auto; color:var(--text)}
+.legend i{font-style:normal; color:var(--text3); width:34px; text-align:right}
+
+/* evidence */
 .search{
-  background:var(--bg); border:1px solid var(--line-soft); border-radius:6px;
-  padding:7px 10px; font-size:10.5px; color:var(--text3); margin-bottom:9px;
+  background:var(--bg); border:1px solid var(--line-soft); border-radius:7px;
+  padding:8px 11px; font-size:11px; color:var(--text3); margin-bottom:11px;
+  display:flex; align-items:center; gap:8px;
 }
-table{width:100%; border-collapse:collapse; font-size:10.5px}
+.search b{color:var(--amber-dim); font-weight:400}
+table{width:100%; border-collapse:collapse; font-size:11px; table-layout:fixed}
 th{
-  text-align:left; font-weight:400; font-size:9px; letter-spacing:.13em; color:var(--text3);
-  text-transform:uppercase; padding:0 0 7px; border-bottom:1px solid var(--line-soft);
+  text-align:left; font-weight:400; font-size:9.5px; letter-spacing:.12em; color:var(--text3);
+  text-transform:uppercase; padding:0 8px 8px 0; border-bottom:1px solid var(--line);
 }
-td{padding:6px 0; border-bottom:1px solid rgba(44,37,33,.5); color:var(--text2); white-space:nowrap}
-td.n{color:var(--text3)}
-td.p{color:var(--text); max-width:1px; overflow:hidden; text-overflow:ellipsis}
-td.r{text-align:right}
-.sq{display:inline-block; width:7px; height:7px; border-radius:2px; margin-right:7px; vertical-align:baseline}
-.inctx{font-size:8.5px; letter-spacing:.1em; color:var(--text3)}
-.trow{display:flex; align-items:center; gap:9px; font-size:10.5px; padding:5px 0; color:var(--text2)}
-.used{font-size:8.5px; letter-spacing:.12em; border:1px solid var(--amber-dim); color:var(--amber); padding:2px 6px; border-radius:4px}
-.trow .nm{color:var(--text)}
-.trow .sp{margin-left:auto; color:var(--text3); font-size:10px}
-.act{display:flex; gap:8px; font-size:10px; padding:6px 0; border-bottom:1px solid rgba(44,37,33,.45); line-height:1.45}
-.act .ic{color:var(--amber); flex:none}
+th:last-child,td:last-child{padding-right:0}
+td{
+  padding:7px 8px 7px 0; border-bottom:1px solid rgba(44,37,33,.55); color:var(--text2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+tr:last-child td{border-bottom:0}
+td.p{color:var(--text)}
+td.r,th.r{text-align:right}
+.sq{display:inline-block; width:7px; height:7px; border-radius:2px; margin-right:8px; vertical-align:baseline; flex:none}
+.st{font-size:9.5px; letter-spacing:.09em; color:var(--text3)}
+.st.out{color:var(--orange)}
+.st.bd{color:var(--amber)}
+tr.hl td{background:rgba(217,119,87,.07)}
+
+/* tool registry */
+.trow{display:flex; align-items:center; gap:10px; font-size:11px; padding:6px 0; color:var(--text2)}
+.trow+.trow{border-top:1px solid rgba(44,37,33,.45)}
+.used{
+  font-size:9px; letter-spacing:.11em; border:1px solid var(--amber-dim); color:var(--amber);
+  padding:2px 7px; border-radius:4px; flex:none;
+}
+.used.off{border-color:var(--line); color:var(--text3)}
+.trow .nm{color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.trow .sp{margin-left:auto; color:var(--text3); font-size:10.5px; white-space:nowrap; flex:none}
+
+/* clues + activity */
+.act{display:flex; gap:9px; font-size:10.5px; padding:8px 0; line-height:1.5; min-width:0}
+.act+.act{border-top:1px solid rgba(44,37,33,.45)}
+.act .ic{color:var(--amber); flex:none; font-size:9px; line-height:1.7}
 .act .bd{flex:1; min-width:0}
 .act .t1{color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.act .t2{color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.act .ts{color:var(--text3); font-size:9px; flex:none}
+.act .t2{color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:1px}
+.act .ts{color:var(--text3); font-size:9.5px; flex:none; white-space:nowrap}
+
 .shot-foot{
-  margin-top:11px; padding:9px 12px; background:var(--bg3); border:1px solid var(--line-soft);
-  border-radius:8px; font-size:9.5px; color:var(--text3); line-height:1.6;
+  margin-top:12px; padding:10px 14px; background:var(--bg3); border:1px solid var(--line-soft);
+  border-radius:9px; font-size:10px; color:var(--text3); line-height:1.65;
 }
-.shot-cap{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:16px}
+.shot-foot b{color:var(--text2); font-weight:400; letter-spacing:.12em}
+.shot-cap{text-align:center; font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:18px}
 
 /* panels grid */
 .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(268px,100%),1fr)); gap:14px; margin-top:34px}
@@ -481,132 +547,153 @@ footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
   </section>
 
   <!-- MOCKUP -->
-  <section style="padding-top:0;border-top:0">
+  <section class="shot-sec" style="padding-top:0;border-top:0">
     <div class="shot-wrap">
-    <p class="shot-hint"><span>&#8646;</span> Swipe to explore the full dashboard</p>
+    <p class="shot-hint"><span>&#8646;</span> Scroll sideways to explore the full dashboard</p>
     <div class="shot-outer">
-      <div class="shot" role="img" aria-label="The ContextClues dashboard: a context meter reading 37.9 percent of a one million token window, a context growth curve with burn rate and projected runway, a composition breakdown by source, a searchable evidence table showing which entries are in context and which were compacted out, a tool registry, a clues panel, and a live activity stream.">
+      <div class="shot" role="img" aria-label="The ContextClues dashboard: a context meter reading 37.9 percent of a one million token window, a context growth curve marked with a compaction that dropped 316 thousand tokens, a composition breakdown by source, a searchable evidence table showing which entries are in context and which were compacted out, a tool registry, a clues panel, and a live activity stream.">
 
         <div class="shot-bar">
           <div class="shot-mark">CONTEXT<span>CLUES</span></div>
           <span class="dim">CASE FILE</span>
-          <span class="pill">&#9679; refactor-billing &middot; /Users/dev/acme-api</span>
+          <span class="pill">refactor-billing &middot; ~/dev/acme-api</span>
           <span class="pill live"><span class="dot"></span>LIVE &middot; pid 41827 &middot; busy</span>
           <div class="nav-sp"></div>
-          <span class="dim">stream on &nbsp; rendered just now</span>
+          <span class="dim">stream on &nbsp;&middot;&nbsp; rendered just now</span>
         </div>
 
         <div class="grid3">
 
-          <!-- LEFT -->
-          <div>
+          <!-- LEFT COLUMN -->
+          <div class="col">
             <div class="pnl">
               <div class="pnl-h">Context Meter <span class="r"><span class="tag">Observed</span></span></div>
               <div class="meter-top">
                 <div class="big">37.9<span style="color:var(--amber)">%</span></div>
-                <div class="meter-r">379k / 1.00M<br><span class="dim" style="font-size:9px;letter-spacing:.12em">TOKENS</span></div>
+                <div class="meter-r">379k / 1.00M<em>TOKENS</em></div>
               </div>
-              <div class="bar"><i></i></div>
-              <div class="ticks"><i style="margin-left:70%">70</i><i style="margin-left:calc(15% - 12px)">85</i></div>
+              <div class="bar"><i></i><u style="left:70%"></u><u style="left:85%"></u></div>
+              <div class="bar-l"><span>0</span><span>warn 70</span><span>1.00M</span></div>
 
               <div class="spark">
-                <svg viewBox="0 0 240 56" preserveAspectRatio="none" aria-hidden="true">
+                <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
                   <defs>
-                    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#E0AC4B" stop-opacity=".26"/>
+                    <linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E0AC4B" stop-opacity=".28"/>
                       <stop offset="100%" stop-color="#E0AC4B" stop-opacity="0"/>
                     </linearGradient>
                   </defs>
-                  <path d="M0,54 L14,50 L28,47 L42,44 L56,41 L70,39 L84,33 L96,32 L96,41 L110,38 L124,35 L138,31 L152,28 L166,24 L180,21 L194,17 L208,14 L222,11 L240,8 L240,56 L0,56 Z" fill="url(#g)"/>
-                  <path d="M0,54 L14,50 L28,47 L42,44 L56,41 L70,39 L84,33 L96,32 L96,41 L110,38 L124,35 L138,31 L152,28 L166,24 L180,21 L194,17 L208,14 L222,11 L240,8"
-                        fill="none" stroke="#E0AC4B" stroke-width="1.3" stroke-linejoin="round"/>
-                  <line x1="96" y1="4" x2="96" y2="56" stroke="#6E6459" stroke-width="1" stroke-dasharray="2 3"/>
+                  <line x1="0" y1="24" x2="320" y2="24" stroke="#231D19" stroke-width="1"/>
+                  <line x1="0" y1="52" x2="320" y2="52" stroke="#231D19" stroke-width="1"/>
+                  <line x1="0" y1="80" x2="320" y2="80" stroke="#231D19" stroke-width="1"/>
+                  <path d="M0,84.6 L30,69.8 L60,55 L90,40.2 L120,21.7 L140,15.8 L140,74.2 L170,64.3 L200,53.2 L230,42.1 L260,32.8 L290,25.4 L320,21.9 L320,96 L0,96 Z" fill="url(#gfill)"/>
+                  <path d="M0,84.6 L30,69.8 L60,55 L90,40.2 L120,21.7 L140,15.8 L140,74.2 L170,64.3 L200,53.2 L230,42.1 L260,32.8 L290,25.4 L320,21.9"
+                        fill="none" stroke="#E0AC4B" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                  <line x1="140" y1="4" x2="140" y2="92" stroke="#D97757" stroke-width="1" stroke-dasharray="3 3"/>
+                  <circle cx="320" cy="21.9" r="3" fill="#E0AC4B"/>
                 </svg>
-                <div class="spark-l"><span>405 requests</span><span>context growth</span></div>
+                <div class="spark-l"><span>405 requests</span><span style="color:var(--orange)">compaction</span><span>now</span></div>
               </div>
 
-              <div class="kv"><span class="k">burn rate</span><span class="fill"></span><span class="v">~2.0k/req</span></div>
-              <div class="kv"><span class="k">runway</span><span class="fill"></span><span class="v">2.1 h &middot; ~306 to 925 req</span></div>
-              <div class="kv"><span class="k">cache read</span><span class="fill"></span><span class="v">378k</span></div>
-              <div class="kv"><span class="k">fresh input</span><span class="fill"></span><span class="v">2</span></div>
-              <div class="kv"><span class="k">observed</span><span class="fill"></span><span class="v">just now</span></div>
+              <div class="kv"><span class="k">burn rate</span><span class="fill"></span><span class="v">~2.0k / req</span></div>
+              <div class="kv"><span class="k">runway</span><span class="fill"></span><span class="v hi">2.1 h</span><span class="v" style="color:var(--text3)">(306 to 925 req)</span></div>
+              <div class="kv"><span class="k">cache read</span><span class="fill"></span><span class="v">378k</span><span class="v" style="color:var(--text3)">(fresh 2)</span></div>
               <div class="kv"><span class="k">model</span><span class="fill"></span><span class="v">claude-opus-5</span></div>
-              <p class="note">Token count is the API's own figure from the last assistant turn (observed). Max window is assumed. Rate observed, runway projected.</p>
+              <p class="note">Token count is the API's own figure from the last assistant turn. Rate is observed, runway is projected, max window is assumed.</p>
             </div>
 
-            <div class="pnl">
+            <div class="pnl grow">
               <div class="pnl-h">Composition <span class="r">~379k accounted</span></div>
               <div class="stack">
-                <i style="width:22%;background:var(--orange)"></i>
-                <i style="width:15%;background:var(--amber)"></i>
-                <i style="width:11%;background:var(--blue)"></i>
-                <i style="width:9%;background:var(--green)"></i>
-                <i style="width:43%;background:repeating-linear-gradient(45deg,#3A322C,#3A322C 3px,#2A241F 3px,#2A241F 6px)"></i>
+                <i style="width:41%;background:#D97757">41%</i>
+                <i style="width:17%;background:#E0AC4B">17%</i>
+                <i style="width:9%;background:#6C9BD2"></i>
+                <i style="width:6%;background:#6FBF8B"></i>
+                <i style="width:27%;background:repeating-linear-gradient(45deg,#3E352E,#3E352E 3px,#2A241F 3px,#2A241F 6px)"></i>
               </div>
               <div class="legend">
-                <span><b style="background:var(--orange)"></b>tool results</span>
-                <span><b style="background:var(--amber)"></b>assistant</span>
-                <span><b style="background:var(--blue)"></b>user</span>
-                <span><b style="background:var(--green)"></b>injected</span>
-                <span><b style="background:#3A322C"></b>system overhead</span>
+                <span><b style="background:#D97757"></b>tool results<em>155k</em><i>41%</i></span>
+                <span><b style="background:#E0AC4B"></b>assistant<em>64k</em><i>17%</i></span>
+                <span><b style="background:#6C9BD2"></b>user<em>34k</em><i>9%</i></span>
+                <span><b style="background:#6FBF8B"></b>injected<em>23k</em><i>6%</i></span>
+                <span><b style="background:#3E352E"></b>system<em>103k</em><i>27%</i></span>
               </div>
+              <p class="note">System overhead never appears in the transcript, so it is inferred: observed total minus the sum of estimates.</p>
             </div>
           </div>
 
-          <!-- MIDDLE -->
-          <div>
-            <div class="pnl" style="height:100%">
-              <div class="pnl-h">Evidence <span class="r">490 entries &middot; newest 250</span></div>
-              <div class="search">search evidence: text, tool, file path&hellip;</div>
+          <!-- MIDDLE COLUMN -->
+          <div class="col">
+            <div class="pnl grow">
+              <div class="pnl-h">Evidence <span class="r">490 entries &middot; 1,360 records</span></div>
+              <div class="search"><b>&#9906;</b> search evidence: text, tool, file path</div>
               <table>
-                <thead><tr><th>#</th><th>Source</th><th>Preview</th><th class="r">~Tokens</th><th class="r">Age</th><th class="r">Status</th></tr></thead>
+                <colgroup>
+                  <col style="width:104px"><col><col style="width:74px">
+                  <col style="width:66px"><col style="width:104px">
+                </colgroup>
+                <thead><tr>
+                  <th>Source</th><th>Preview</th><th class="r">~Tokens</th><th class="r">Age</th><th class="r">Status</th>
+                </tr></thead>
                 <tbody>
-                  <tr><td class="n">#1360</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] src/billing/invoice.ts</td><td class="r">~4,102</td><td class="r n">just now</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1359</td><td><span class="sq" style="background:var(--amber)"></span>assistant</td><td class="p">Read({"file_path":"src/billing/&hellip;</td><td class="r">~86</td><td class="r n">just now</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1358</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Bash] npm test: 41 passing</td><td class="r">~612</td><td class="r n">8s ago</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1357</td><td><span class="sq" style="background:var(--blue)"></span>user</td><td class="p">also update the proration path</td><td class="r">~11</td><td class="r n">22s ago</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1356</td><td><span class="sq" style="background:var(--amber)"></span>assistant</td><td class="p">The proration branch assumes a&hellip;</td><td class="r">~340</td><td class="r n">31s ago</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1355</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Grep] "prorate": 18 matches</td><td class="r">~1,204</td><td class="r n">44s ago</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1352</td><td><span class="sq" style="background:#7A6A55"></span>injected</td><td class="p">[total_tokens_reminder]</td><td class="r">~13</td><td class="r n">1m ago</td><td class="r inctx">IN CTX</td></tr>
-                  <tr><td class="n">#1341</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] package-lock.json</td><td class="r">~31,880</td><td class="r n">14m ago</td><td class="r inctx" style="color:var(--orange)">COMPACTED OUT</td></tr>
-                  <tr><td class="n">#1338</td><td><span class="sq" style="background:var(--orange)"></span>system</td><td class="p">compact_boundary: 412k &rarr; 96k</td><td class="r">&middot;</td><td class="r n">14m ago</td><td class="r inctx">BOUNDARY</td></tr>
-                  <tr><td class="n">#1330</td><td><span class="sq" style="background:var(--green)"></span>tool result</td><td class="p">[Read] src/db/schema.sql</td><td class="r">~2,910</td><td class="r n">19m ago</td><td class="r inctx" style="color:var(--orange)">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Read] src/billing/invoice.ts</td><td class="r">4,102</td><td class="r">just now</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#E0AC4B"></span>assistant</td><td class="p">Read(src/billing/invoice.ts)</td><td class="r">86</td><td class="r">just now</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Bash] npm test: 41 passing</td><td class="r">612</td><td class="r">8s ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#6C9BD2"></span>user</td><td class="p">also update the proration path</td><td class="r">11</td><td class="r">22s ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#E0AC4B"></span>assistant</td><td class="p">Proration assumes a full cycle</td><td class="r">340</td><td class="r">31s ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Grep] "prorate": 18 matches</td><td class="r">1,204</td><td class="r">44s ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#6FBF8B"></span>injected</td><td class="p">[total_tokens_reminder]</td><td class="r">13</td><td class="r">1m ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Read] src/billing/invoice.ts</td><td class="r">4,102</td><td class="r">6m ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr class="hl"><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Read] package-lock.json</td><td class="r">31,880</td><td class="r">14m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#7A6A55"></span>system</td><td class="p">compact_boundary: 412k to 96k</td><td class="r">&middot;</td><td class="r">14m ago</td><td class="r st bd">BOUNDARY</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Read] src/db/schema.sql</td><td class="r">2,910</td><td class="r">19m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#E0AC4B"></span>assistant</td><td class="p">Mapping the invoice tables first</td><td class="r">284</td><td class="r">21m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#6C9BD2"></span>user</td><td class="p">refactor the billing module</td><td class="r">9</td><td class="r">24m ago</td><td class="r st">PRESERVED</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Bash] git log --oneline -20</td><td class="r">418</td><td class="r">26m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#6FBF8B"></span>injected</td><td class="p">[skill_listing] 42 skills</td><td class="r">1,860</td><td class="r">28m ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Glob] src/**/*.ts: 214 files</td><td class="r">2,240</td><td class="r">31m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#6FBF8B"></span>injected</td><td class="p">[deferred_tools_delta] +18 tools</td><td class="r">44</td><td class="r">36m ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#D97757"></span>tool result</td><td class="p">[Read] src/billing/proration.ts</td><td class="r">3,470</td><td class="r">41m ago</td><td class="r st out">COMPACTED OUT</td></tr>
+                  <tr><td><span class="sq" style="background:#6FBF8B"></span>injected</td><td class="p">[hook_additional_context]</td><td class="r">308</td><td class="r">47m ago</td><td class="r st">IN CONTEXT</td></tr>
+                  <tr><td><span class="sq" style="background:#6C9BD2"></span>user</td><td class="p">start with the schema, then tests</td><td class="r">14</td><td class="r">49m ago</td><td class="r st">PRESERVED</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- RIGHT -->
-          <div>
+          <!-- RIGHT COLUMN -->
+          <div class="col">
             <div class="pnl">
-              <div class="pnl-h">Tool Registry <span class="r">17 used &middot; 346 known</span></div>
+              <div class="pnl-h">Tool Registry <span class="r">17 of 346</span></div>
               <div class="trow"><span class="used">USED</span><span class="nm">Edit</span><span class="sp">&times;68 &nbsp; built-in</span></div>
               <div class="trow"><span class="used">USED</span><span class="nm">Bash</span><span class="sp">&times;65 &nbsp; built-in</span></div>
               <div class="trow"><span class="used">USED</span><span class="nm">Read</span><span class="sp">&times;47 &nbsp; built-in</span></div>
-              <div class="trow"><span class="used" style="border-color:var(--line);color:var(--text3)">DEFER</span><span class="nm" style="color:var(--text2)">notion-search</span><span class="sp">&times;0 &nbsp; mcp</span></div>
-              <p class="note">"Assumed" built-ins come from a static list. Used and deferred entries were observed in this session's transcript.</p>
+              <div class="trow"><span class="used">USED</span><span class="nm">Grep</span><span class="sp">&times;12 &nbsp; built-in</span></div>
+              <div class="trow"><span class="used off">DEFER</span><span class="nm">notion-search</span><span class="sp">&times;0 &nbsp; mcp</span></div>
             </div>
 
             <div class="pnl">
-              <div class="pnl-h">Clues <span class="r">4 open</span></div>
-              <div class="act"><span class="ic" style="color:var(--orange)">&#9650;</span><div class="bd"><div class="t1">Oversized tool result</div><div class="t2">package-lock.json read cost ~31.9k tokens</div></div></div>
-              <div class="act"><span class="ic" style="color:var(--amber)">&#9650;</span><div class="bd"><div class="t1">File loaded 4 times</div><div class="t2">src/billing/invoice.ts, ~16.4k total</div></div></div>
-              <div class="act"><span class="ic">&#9650;</span><div class="bd"><div class="t1">Compaction dropped 316k</div><div class="t2">auto trigger, 412k to 96k, 14m ago</div></div></div>
+              <div class="pnl-h">Clues <span class="r">3 open</span></div>
+              <div class="act"><span class="ic" style="color:var(--orange)">&#9679;</span><div class="bd"><div class="t1">Oversized tool result</div><div class="t2">package-lock.json cost 31.9k tokens</div></div></div>
+              <div class="act"><span class="ic">&#9679;</span><div class="bd"><div class="t1">File loaded 4 times</div><div class="t2">src/billing/invoice.ts, 16.4k total</div></div></div>
+              <div class="act"><span class="ic">&#9679;</span><div class="bd"><div class="t1">Compaction dropped 316k</div><div class="t2">auto trigger, 412k to 96k, 14m ago</div></div></div>
             </div>
 
-            <div class="pnl">
+            <div class="pnl grow">
               <div class="pnl-h">Live Activity <span class="r">newest first</span></div>
-              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Read result</div><div class="t2">src/billing/invoice.ts &nbsp; ~4,102</div></div><span class="ts">just now</span></div>
-              <div class="act"><span class="ic" style="color:var(--orange)">&#9670;</span><div class="bd"><div class="t1">Assistant turn: context at 379k</div><div class="t2">Read({"file_path":"src/billing&hellip;</div></div><span class="ts">just now</span></div>
-              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Bash invoked</div><div class="t2">npm test</div></div><span class="ts">8s ago</span></div>
-              <div class="act" style="border-bottom:0"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Grep invoked</div><div class="t2">"prorate" in src/</div></div><span class="ts">44s ago</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Read result</div><div class="t2">src/billing/invoice.ts &middot; 4,102</div></div><span class="ts">now</span></div>
+              <div class="act"><span class="ic" style="color:var(--orange)">&#9670;</span><div class="bd"><div class="t1">Assistant turn</div><div class="t2">context at 379k tokens</div></div><span class="ts">now</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Bash invoked</div><div class="t2">npm test</div></div><span class="ts">8s</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Grep invoked</div><div class="t2">"prorate" in src/</div></div><span class="ts">44s</span></div>
+              <div class="act"><span class="ic">&#9656;</span><div class="bd"><div class="t1">Edit applied</div><div class="t2">src/billing/proration.ts</div></div><span class="ts">1m</span></div>
+              <div class="act"><span class="ic" style="color:var(--green)">&#9670;</span><div class="bd"><div class="t1">Tools changed</div><div class="t2">deferred_tools_delta &middot; 18 added</div></div><span class="ts">4m</span></div>
             </div>
           </div>
 
         </div>
 
         <div class="shot-foot">
-          NOTES &nbsp; Context totals come from the API usage numbers Claude Code records per assistant turn (observed); per entry sizes are chars/4 estimates. &nbsp;&middot;&nbsp; Maximum window is assumed: Claude Code does not expose it locally. &nbsp;&middot;&nbsp; ContextClues reads transcripts only. It has no access to the model's private reasoning, and inclusion between compactions is inferred from transcript order.
+          <b>NOTES</b> &nbsp; Context totals come from the API usage numbers Claude Code records per assistant turn (observed). Per entry sizes are chars/4 estimates. Maximum window is assumed, because Claude Code does not expose it locally. ContextClues reads transcripts only: it has no access to the model's private reasoning, and inclusion between compactions is inferred from transcript order.
         </div>
       </div>
     </div>
