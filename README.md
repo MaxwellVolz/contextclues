@@ -94,7 +94,7 @@ Environment overrides: `CONTEXTCLUES_CLAUDE_DIR` (default `~/.claude`),
   configuration, which this project refuses to do automatically. See `DISCOVERY.md` for the full
   investigation of what Claude CLI exposes locally.
 
-## Honesty policy
+## Where the numbers come from
 
 Every number carries a confidence label:
 
