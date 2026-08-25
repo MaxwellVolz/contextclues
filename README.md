@@ -1,5 +1,9 @@
 # ContextClues 🔎
 
+[![npm](https://img.shields.io/npm/v/contextclues?color=E0AC4B&label=npm)](https://www.npmjs.com/package/contextclues)
+[![license](https://img.shields.io/badge/license-MIT-E0AC4B)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A522.5-E0AC4B)](https://nodejs.org)
+
 A local, dark, forensic-style developer dashboard that reveals what a running **Claude CLI
 (Claude Code)** session currently has in context: how full the context window is, what's in it,
 which tools are enabled, and what just happened — live.
@@ -23,18 +27,44 @@ observations as **clues**.
 
 ## Install & run
 
-Requires **Node.js ≥ 22.5** (uses the built-in `node:sqlite` — no native builds) and a machine
-where Claude CLI has run (it reads `~/.claude`).
+Requires **Node.js ≥ 22.5** (uses the built-in `node:sqlite`, so there are no native builds) and
+a machine where Claude CLI has run (it reads `~/.claude`).
 
 ```bash
-npm install
-npm run dev        # → http://localhost:4310
+npx contextclues          # → http://localhost:4310
 ```
 
 Run Claude CLI in another terminal; ContextClues auto-detects the active session (live sessions
 are marked ●) and updates in real time as the transcript grows.
 
-Other commands:
+Install it permanently if you prefer:
+
+```bash
+npm install -g contextclues
+contextclues
+```
+
+### CLI options
+
+```
+-p, --port <n>    Port to listen on (default 4310)
+-H, --host <h>    Host to bind (default 127.0.0.1, loopback only)
+    --no-open     Do not open a browser on start
+-v, --version     Print version
+-h, --help        Show this help
+```
+
+The server binds the loopback interface by default, so a dashboard of your transcripts is never
+reachable from the local network.
+
+### From a clone (for development)
+
+```bash
+git clone https://github.com/MaxwellVolz/contextclues.git
+cd contextclues
+npm install
+npm run dev        # → http://localhost:4310
+```
 
 ```bash
 npm test           # unit tests for the parser, redactor, estimator, and clue engine
@@ -43,12 +73,12 @@ npm start          # serve the production build on :4310
 ```
 
 Environment overrides: `CONTEXTCLUES_CLAUDE_DIR` (default `~/.claude`),
-`CONTEXTCLUES_DATA_DIR` (default `./.data`).
+`CONTEXTCLUES_DATA_DIR` (default `~/.contextclues`).
 
 ## How it works
 
 ```
-~/.claude/sessions/*.json ──┐  chokidar (read-only)  ┌─ SQLite (node:sqlite, ./.data/)
+~/.claude/sessions/*.json ──┐  chokidar (read-only)  ┌─ SQLite (node:sqlite, ~/.contextclues/)
 ~/.claude/projects/**.jsonl ├────▶ collector ────────┤
 ~/.claude.json, settings,   │  inside the Next.js    └─ event bus ─▶ SSE /api/stream ─▶ UI
 .mcp.json, plugins, skills ─┘  server process
@@ -99,8 +129,9 @@ are labeled from the CLI's own compaction metadata.
 - Everything stays on your machine. No cloud services, no auth, no telemetry.
 - Likely secrets (API keys, tokens, JWTs, private keys, `*_SECRET=` assignments, …) are redacted
   **before** previews are stored or rendered.
-- ContextClues' own state lives in `./.data/` — delete it at any time; it rebuilds from the
-  transcripts.
+- ContextClues' own state lives in `~/.contextclues/` — delete it at any time; it rebuilds from
+  the transcripts.
+- The server binds `127.0.0.1`, so nothing is exposed to your local network.
 
 ## Project layout
 
@@ -112,3 +143,7 @@ test/       node:test unit tests
 DISCOVERY.md  what Claude CLI actually exposes locally (verified, not assumed)
 PLAN.md       implementation plan
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).

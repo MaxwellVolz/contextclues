@@ -46,8 +46,11 @@
       "operatingSystem":"macOS, Linux, Windows",
       "description":"A local, read-only forensic dashboard that shows what a running Claude Code session has in its context window: observed token usage, growth trajectory with burn rate and projected runway, composition by source, searchable evidence, tool registry, live activity, and actionable clues.",
       "softwareRequirements":"Node.js 22.5 or newer",
-      "license":"https://github.com/MaxwellVolz/contextclues",
+      "softwareVersion":"0.1.0",
+      "license":"https://github.com/MaxwellVolz/contextclues/blob/main/LICENSE",
       "codeRepository":"https://github.com/MaxwellVolz/contextclues",
+      "downloadUrl":"https://www.npmjs.com/package/contextclues",
+      "installUrl":"https://www.npmjs.com/package/contextclues",
       "isAccessibleForFree":true,
       "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
       "featureList":[
@@ -82,7 +85,7 @@
         {
           "@type":"Question",
           "name":"What do I need to run it?",
-          "acceptedAnswer":{"@type":"Answer","text":"Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Clone the repository, run npm install, then npm run dev."}
+          "acceptedAnswer":{"@type":"Answer","text":"Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues."}
         }
       ]
     }
@@ -178,7 +181,8 @@ h2{font-size:clamp(22px,3.2vw,30px); margin-bottom:16px}
 .cmd{
   margin-top:clamp(24px,3vw,30px); display:flex; align-items:center; gap:12px;
   background:var(--bg2); border:1px solid var(--line); border-radius:9px;
-  padding:14px 16px; max-width:660px; font-family:var(--mono); font-size:13px;
+  padding:14px 16px; font-family:var(--mono); font-size:13.5px;
+  width:fit-content; min-width:min(340px,100%); max-width:100%;
 }
 .cmd code{
   color:var(--text); flex:1 1 0; min-width:0; line-height:1.65;
@@ -534,7 +538,7 @@ footer{border-top:1px solid var(--line-soft); padding:34px 0 56px}
 
     <div class="cmd">
       <span class="dollar">$</span>
-      <code id="cmd">git clone https://github.com/MaxwellVolz/contextclues.git &amp;&amp; cd contextclues &amp;&amp; npm i &amp;&amp; npm run dev</code>
+      <code id="cmd">npx contextclues</code>
       <button class="copy" id="copy">COPY</button>
     </div>
 
@@ -749,7 +753,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
     <h2>Your transcripts never leave the machine.</h2>
     <p class="lead">This tool reads the most sensitive text on your computer: your code, your prompts, and your command output. It is built so that none of it goes anywhere.</p>
     <div class="safe">
-      <div class="safe-i"><h3>No network</h3><p>No cloud service, no account, no authentication, no telemetry. The dashboard is a localhost page and the process makes no outbound calls.</p></div>
+      <div class="safe-i"><h3>No network</h3><p>No cloud service, no account, no authentication, no telemetry. The server binds the loopback interface, so it is not reachable from your local network.</p></div>
       <div class="safe-i"><h3>Read only</h3><p>Claude's session files are opened read only and are never written to. Nothing under your agent's configuration directory is created, edited, or deleted.</p></div>
       <div class="safe-i"><h3>Secrets redacted</h3><p>API keys, tokens, JWTs, private keys, and secret style environment assignments are detected and scrubbed before any preview is stored or rendered.</p></div>
       <div class="safe-i"><h3>Disposable state</h3><p>The tool's own index lives in a local folder you can delete at any time. It rebuilds itself from the transcripts on next run.</p></div>
@@ -778,16 +782,16 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
   <!-- INSTALL -->
   <section id="install">
     <div class="eyebrow">Install</div>
-    <h2>Four commands, no services, no config.</h2>
-    <p class="lead">Clone it, install it, run it. Then start a Claude Code session in another terminal and it appears automatically.</p>
+    <h2>One command, no services, no config.</h2>
+    <p class="lead">Run it. Then start a Claude Code session in another terminal and it appears automatically.</p>
     <div class="steps">
 <pre><span class="c"># requires Node.js 22.5 or newer</span>
-<span class="d">$</span> git clone https://github.com/MaxwellVolz/contextclues.git
-<span class="d">$</span> cd contextclues
-<span class="d">$</span> npm install
-<span class="d">$</span> npm run dev
+<span class="d">$</span> npx contextclues
 
-<span class="c">&#8594; http://localhost:4310</span></pre>
+<span class="c">&#8594; http://localhost:4310</span>
+
+<span class="c"># or install it permanently</span>
+<span class="d">$</span> npm install -g contextclues</pre>
     </div>
     <ul class="req">
       <li><b>Node.js 22.5+</b> uses the built in SQLite module, so there is nothing to compile.</li>
@@ -815,7 +819,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
       </div>
       <div class="faq-i">
         <dt>What do I need to run it?</dt>
-        <dd>Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Clone the repository, run npm install, then npm run dev.</dd>
+        <dd>Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues.</dd>
       </div>
     </dl>
   </section>
@@ -834,6 +838,8 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
       <div class="mark">CONTEXT<span>CLUES</span></div>
       <div class="sp"></div>
       <a href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
+      <a href="https://www.npmjs.com/package/contextclues">npm</a>
+      <a href="https://github.com/MaxwellVolz/contextclues/blob/main/LICENSE">MIT License</a>
       <a href="https://github.com/MaxwellVolz/contextclues#readme">Docs</a>
       <a href="https://github.com/MaxwellVolz/contextclues/blob/main/DISCOVERY.md">Discovery notes</a>
     </div>
