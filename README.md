@@ -7,7 +7,7 @@
 
 A local, dark, forensic-style developer dashboard that reveals what a running **Claude CLI
 (Claude Code)** session currently has in context: how full the context window is, what's in it,
-which tools are enabled, and what just happened — live.
+which tools are enabled, and what is happening live.
 
 ContextClues treats each session as a **case file**, context entries as **evidence**, and its
 observations as **clues**.
