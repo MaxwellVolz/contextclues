@@ -12,13 +12,15 @@ import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:net";
 
-// node:sqlite is what removes the native build step, and it landed in 22.5. Check
-// before anything else, so an old runtime gets this instead of a module-not-found stack.
+// node:sqlite is what removes the native build step. It appeared in 22.5, but stayed
+// behind --experimental-sqlite until 22.13, so 22.5 through 22.12 cannot load it
+// unflagged. Check before anything else, so an old runtime gets this instead of a
+// module-not-found stack.
 const [major, minor] = process.versions.node.split(".").map(Number);
-if (major < 22 || (major === 22 && minor < 5)) {
+if (major < 22 || (major === 22 && minor < 13)) {
   console.error(
-    `contextclues: needs Node 22.5 or newer (found ${process.versions.node}).\n` +
-      "It uses the built-in node:sqlite module, which older versions do not have.\n" +
+    `contextclues: needs Node 22.13 or newer (found ${process.versions.node}).\n` +
+      "It uses the built-in node:sqlite module, which older versions keep behind a flag.\n" +
       "Upgrade at https://nodejs.org, or with: nvm install 22"
   );
   process.exit(1);

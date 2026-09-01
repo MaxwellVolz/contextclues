@@ -47,10 +47,11 @@ jobs:
           retention-days: 1
 
   # The floor job verifies the promise in `engines`: that the package a user
-  # installs runs on Node 22.5.0, the first release with node:sqlite.
+  # installs runs on Node 22.13.0, the first release where node:sqlite works unflagged
+  # (it existed from 22.5 but required --experimental-sqlite until 22.13).
   #
   # It deliberately does NOT install the dev toolchain. npm 10.8.2, bundled with
-  # Node 22.5.0, crashes on `npm ci` ("Exit handler never called!"), and that npm
+  # older Node 22, crashes on `npm ci` ("Exit handler never called!"), and that npm
   # bug says nothing about whether ContextClues works. Installing the packed
   # tarball exercises the real contract: four runtime dependencies and the CLI.
   floor:
@@ -60,11 +61,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-    name: floor · ${{ matrix.os }} · node 22.5.0
+    name: floor · ${{ matrix.os }} · node 22.13.0
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.5.0
+          node-version: 22.13.0
       - uses: actions/download-artifact@v4
         with:
           name: package-tarball

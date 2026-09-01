@@ -3,6 +3,20 @@
 All notable changes to ContextClues are documented here. This project follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.1 — 2026-09-01
+
+### Fixed
+
+- **The declared Node floor was wrong.** `node:sqlite` appeared in Node 22.5.0 but
+  stayed behind `--experimental-sqlite` until 22.13.0, so ContextClues could not run
+  unflagged on 22.5 through 22.12 despite claiming to. `engines`, the startup check,
+  the README and the website now all say 22.13. Anyone on an affected version was
+  waved past the version guard and then hit a confusing module error; they now get a
+  clear message naming the required version.
+
+  Found by a new CI job that installs the published tarball on the declared floor and
+  boots the server, rather than assuming the floor is whatever the manifest claims.
+
 ## 0.2.0 — 2026-09-01
 
 ### Security
@@ -38,8 +52,8 @@ All notable changes to ContextClues are documented here. This project follows
   "Scanning ~/.claude…" indefinitely when no sessions existed.
 - A clear message when the port is already in use, instead of an `EADDRINUSE` stack trace.
 - A Node version check naming `node:sqlite` as the reason, instead of a module-resolution
-  error on Node older than 22.5.
-- Continuous integration across Ubuntu and macOS on Node 22.5, 22.x and 24.x, including a
+  error on Node older than the supported floor.
+- Continuous integration across Ubuntu and macOS on Node 22.x and 24.x, including a
   job that installs the packed tarball and runs its CLI.
 - A privacy page at https://ctxclues.com/privacy.
 

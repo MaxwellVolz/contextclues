@@ -47,7 +47,7 @@
       "applicationSubCategory":"Observability",
       "operatingSystem":"macOS, Linux, Windows",
       "description":"A local, read-only forensic dashboard that shows what a running Claude Code session has in its context window: observed token usage, growth trajectory with burn rate and projected runway, composition by source, searchable evidence, tool registry, live activity, and actionable clues.",
-      "softwareRequirements":"Node.js 22.5 or newer",
+      "softwareRequirements":"Node.js 22.13 or newer",
       "softwareVersion":"0.2.0",
       "license":"https://github.com/MaxwellVolz/contextclues/blob/main/LICENSE",
       "codeRepository":"https://github.com/MaxwellVolz/contextclues",
@@ -87,7 +87,7 @@
         {
           "@type":"Question",
           "name":"What do I need to run it?",
-          "acceptedAnswer":{"@type":"Answer","text":"Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues."}
+          "acceptedAnswer":{"@type":"Answer","text":"Node.js 22.13 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues."}
         }
       ]
     }
@@ -777,7 +777,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
     <h2>One command, no services, no config.</h2>
     <p class="lead">Run it. Then start a Claude Code session in another terminal and it appears automatically.</p>
     <div class="steps">
-<pre><span class="c"># requires Node.js 22.5 or newer</span>
+<pre><span class="c"># requires Node.js 22.13 or newer</span>
 <span class="d">$</span> npx contextclues
 
 <span class="c">&#8594; http://localhost:4310</span>
@@ -786,7 +786,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
 <span class="d">$</span> npm install -g contextclues</pre>
     </div>
     <ul class="req">
-      <li><b>Node.js 22.5+</b> uses the built in SQLite module, so there is nothing to compile.</li>
+      <li><b>Node.js 22.13+</b> uses the built in SQLite module, so there is nothing to compile.</li>
       <li><b>A machine where Claude Code has run</b> it reads the session files that are already there.</li>
       <li><b>Live sessions are auto detected</b> marked with a dot, updating in real time as the transcript grows.</li>
     </ul>
@@ -811,7 +811,7 @@ settings, .mcp.json, plugins   <b>&#9472;&#9472;&#9496;</b>    <i>read only</i> 
       </div>
       <div class="faq-i">
         <dt>What do I need to run it?</dt>
-        <dd>Node.js 22.5 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues.</dd>
+        <dd>Node.js 22.13 or newer, and a machine where Claude Code has run. It uses the built in SQLite module, so there is nothing to compile. Run npx contextclues, or install it permanently with npm install -g contextclues.</dd>
       </div>
     </dl>
   </section>

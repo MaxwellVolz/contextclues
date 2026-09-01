@@ -3,7 +3,7 @@
 [![CI](https://github.com/MaxwellVolz/contextclues/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxwellVolz/contextclues/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/contextclues?color=E0AC4B&label=npm)](https://www.npmjs.com/package/contextclues)
 [![license](https://img.shields.io/badge/license-MIT-E0AC4B)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A522.5-E0AC4B)](https://nodejs.org)
+[![node](https://img.shields.io/badge/node-%E2%89%A522.13-E0AC4B)](https://nodejs.org)
 
 A local, dark, forensic-style developer dashboard that reveals what a running **Claude CLI
 (Claude Code)** session currently has in context: how full the context window is, what's in it,
@@ -28,7 +28,7 @@ observations as **clues**.
 
 ## Install & run
 
-Requires **Node.js ≥ 22.5** (uses the built-in `node:sqlite`, so there are no native builds) and
+Requires **Node.js ≥ 22.13** (uses the built-in `node:sqlite`, so there are no native builds) and
 a machine where Claude CLI has run (it reads `~/.claude`).
 
 ```bash
