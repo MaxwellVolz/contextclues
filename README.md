@@ -147,6 +147,16 @@ DISCOVERY.md  what Claude CLI actually exposes locally (verified, not assumed)
 PLAN.md       implementation plan
 ```
 
+## Support
+
+ContextClues is free, MIT licensed, and maintained by one person. If it caught a context
+window before it cost you a session, you can chip in here:
+
+**[Sponsor ContextClues](https://buy.stripe.com/REPLACE_ME)**
+
+Sponsoring buys no features, no support commitment, and no say over the roadmap. Issues and
+pull requests are worth just as much.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

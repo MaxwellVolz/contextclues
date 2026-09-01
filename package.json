@@ -21,6 +21,10 @@
   "bugs": {
     "url": "https://github.com/MaxwellVolz/contextclues/issues"
   },
+  "funding": {
+    "type": "individual",
+    "url": "https://buy.stripe.com/REPLACE_ME"
+  },
   "license": "MIT",
   "author": "Maxwell Volz",
   "type": "module",
