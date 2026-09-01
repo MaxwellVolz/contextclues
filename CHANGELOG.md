@@ -17,6 +17,12 @@ All notable changes to ContextClues are documented here. This project follows
   Found by a new CI job that installs the published tarball on the declared floor and
   boots the server, rather than assuming the floor is whatever the manifest claims.
 
+### Added
+
+- The dashboard now has a favicon. Previously the tab at `localhost:4310` showed the
+  browser's blank default, which is easy to lose among other tabs. Served as SVG with
+  an `.ico` fallback for browsers that do not render SVG icons.
+
 ## 0.2.0 — 2026-09-01
 
 ### Security
