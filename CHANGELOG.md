@@ -3,6 +3,15 @@
 All notable changes to ContextClues are documented here. This project follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.2 — 2026-09-01
+
+### Fixed
+
+- The sponsor link shipped as an unreplaced `REPLACE_ME` placeholder in 0.2.1, so the
+  link npm renders on the package page, and the `funding` field `npm fund` reads, both
+  pointed at a Stripe URL that does not exist. Both now carry the real link. Code is
+  unchanged; this release exists only because npm metadata cannot be edited in place.
+
 ## 0.2.1 — 2026-09-01
 
 ### Fixed

@@ -1,3 +1,3 @@
 # Renders the "Sponsor" button at the top of the GitHub repo.
 # Stripe is not one of GitHub's named platforms, so the payment link goes under `custom`.
-custom: ["https://buy.stripe.com/REPLACE_ME"]
+custom: ["https://buy.stripe.com/cNi7sK4Lc6syfWO7D09k409"]

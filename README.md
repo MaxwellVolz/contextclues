@@ -152,7 +152,7 @@ PLAN.md       implementation plan
 ContextClues is free, MIT licensed, and maintained by one person. If it caught a context
 window before it cost you a session, you can chip in here:
 
-**[Sponsor ContextClues](https://buy.stripe.com/REPLACE_ME)**
+**[Sponsor ContextClues](https://buy.stripe.com/cNi7sK4Lc6syfWO7D09k409)**
 
 Sponsoring buys no features, no support commitment, and no say over the roadmap. Issues and
 pull requests are worth just as much.
