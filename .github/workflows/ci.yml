@@ -21,8 +21,15 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+      # npm 10.8.2, bundled with Node 22.5.0, crashes on `npm ci`
+      # ("Exit handler never called!"). The package itself does not depend on npm,
+      # so upgrading here costs no coverage of the Node floor we actually care about.
+      - run: npm install -g npm@11
       - run: npm ci
-      - run: npx tsc --noEmit
+      # `npm run`, never `npx`: npx silently fetches an unrelated package from the
+      # registry when the local binary is missing, which is how a failed install
+      # turned into executing tsc@2.0.4 from the registry.
+      - run: npm run typecheck
       - run: npm test
 
   build:
@@ -33,6 +40,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
+      - run: npm install -g npm@11
       - run: npm ci
       - run: npm run build
       # The published package is a prebuilt Next app, so verify the tarball a user

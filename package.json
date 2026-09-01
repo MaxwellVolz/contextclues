@@ -42,6 +42,7 @@
   "scripts": {
     "dev": "next dev -p 4310 -H 127.0.0.1",
     "build": "next build",
+    "typecheck": "tsc --noEmit",
     "start": "next start -p 4310 -H 127.0.0.1",
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "prepublishOnly": "rm -rf .next && npm run build && npm test"
