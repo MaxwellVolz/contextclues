@@ -1,7 +1,17 @@
+<!-- Source of truth for the mark. favicon.ico, icon-192.png, icon-512.png and
+     apple-touch-icon.png are all rendered from this file and flattened onto
+     #131110, so edit here and re-render rather than touching the rasters. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ContextClues">
   <rect width="64" height="64" rx="14" fill="#131110"/>
-  <circle cx="28" cy="28" r="14" fill="none" stroke="#E0AC4B" stroke-width="4.5"/>
-  <path d="M38.5 38.5 L50 50" stroke="#E0AC4B" stroke-width="5.5" stroke-linecap="round"/>
-  <path d="M21 30.5 L26 30.5 L29 22.5 L33 34 L35.5 30.5" fill="none" stroke="#E9E3D9"
-        stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="27" cy="27" r="15.5" fill="none" stroke="#E0AC4B" stroke-width="5"/>
+  <path d="M39 39 L51 51" stroke="#E0AC4B" stroke-width="6" stroke-linecap="round"/>
+  <!-- Eight tapered rays, pinched at the lens centre and rounded at the tips. -->
+  <path fill="#D97757" d="M27,27 L28.378,18.42 A1.378,1.378 0 0 0 25.622,18.42 Z
+                          M27,27 L34.041,21.907 A1.378,1.378 0 0 0 32.093,19.959 Z
+                          M27,27 L35.58,28.378 A1.378,1.378 0 0 0 35.58,25.622 Z
+                          M27,27 L32.093,34.041 A1.378,1.378 0 0 0 34.041,32.093 Z
+                          M27,27 L25.622,35.58 A1.378,1.378 0 0 0 28.378,35.58 Z
+                          M27,27 L19.959,32.093 A1.378,1.378 0 0 0 21.907,34.041 Z
+                          M27,27 L18.42,25.622 A1.378,1.378 0 0 0 18.42,28.378 Z
+                          M27,27 L21.907,19.959 A1.378,1.378 0 0 0 19.959,21.907 Z"/>
 </svg>
