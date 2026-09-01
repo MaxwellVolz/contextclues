@@ -21,10 +21,13 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      # npm 10.8.2, bundled with Node 22.5.0, crashes on `npm ci`
-      # ("Exit handler never called!"). The package itself does not depend on npm,
-      # so upgrading here costs no coverage of the Node floor we actually care about.
-      - run: npm install -g npm@11
+      # npm 10.8.2, bundled with Node 22.5.0, crashes on `npm ci` with
+      # "Exit handler never called!". Fixed in 10.9.0. npm 11 cannot be used here:
+      # it requires Node >=22.9, above our floor. Only this job needs the bump;
+      # the package has no runtime dependency on npm, so coverage is unaffected.
+      - name: Work around the npm crash on the Node floor
+        if: matrix.node == '22.5.0'
+        run: npm install -g npm@10.9.9
       - run: npm ci
       # `npm run`, never `npx`: npx silently fetches an unrelated package from the
       # registry when the local binary is missing, which is how a failed install
@@ -40,7 +43,6 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm install -g npm@11
       - run: npm ci
       - run: npm run build
       # The published package is a prebuilt Next app, so verify the tarball a user
