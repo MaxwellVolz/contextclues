@@ -1,6 +1,6 @@
 {
   "name": "contextclues",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A local, read-only dashboard showing what a running Claude Code session has in its context window: observed token usage, growth trajectory, composition, evidence, tools, and clues.",
   "keywords": [
     "claude",
@@ -32,6 +32,7 @@
     ".next/",
     "!.next/cache/",
     "next.config.mjs",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md"
   ],

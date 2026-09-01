@@ -1,5 +1,6 @@
 # ContextClues 🔎
 
+[![CI](https://github.com/MaxwellVolz/contextclues/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxwellVolz/contextclues/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/contextclues?color=E0AC4B&label=npm)](https://www.npmjs.com/package/contextclues)
 [![license](https://img.shields.io/badge/license-MIT-E0AC4B)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A522.5-E0AC4B)](https://nodejs.org)
@@ -67,7 +68,7 @@ npm run dev        # → http://localhost:4310
 ```
 
 ```bash
-npm test           # unit tests for the parser, redactor, estimator, and clue engine
+npm test           # parser, redaction, estimator, clue engine, collector, SQLite, case-file
 npm run build      # production build
 npm start          # serve the production build on :4310
 ```
@@ -127,8 +128,10 @@ are labeled from the CLI's own compaction metadata.
 ## Privacy
 
 - Everything stays on your machine. No cloud services, no auth, no telemetry.
-- Likely secrets (API keys, tokens, JWTs, private keys, `*_SECRET=` assignments, …) are redacted
-  **before** previews are stored or rendered.
+- Likely secrets are redacted **before** previews are stored or rendered: vendor API keys
+  (Anthropic, OpenAI, Google, Stripe, AWS, GitHub, GitLab, Slack, npm, HuggingFace), JWTs,
+  bearer headers, private-key blocks, passwords embedded in connection strings, and
+  secret-looking assignments. See `lib/redact.ts`; `test/redact.test.ts` covers each format.
 - ContextClues' own state lives in `~/.contextclues/` — delete it at any time; it rebuilds from
   the transcripts.
 - The server binds `127.0.0.1`, so nothing is exposed to your local network.
@@ -139,7 +142,7 @@ are labeled from the CLI's own compaction metadata.
 lib/        registry, transcript parser, collector, SQLite, case-file builder, clue engine, redaction
 app/        Next.js App Router: dashboard page + /api/cases, /api/case/[id], /api/stream (SSE)
 components/ dashboard panels (meter, composition, evidence, tools, activity, clues)
-test/       node:test unit tests
+test/       node:test suites (135 tests) + shared transcript fixtures
 DISCOVERY.md  what Claude CLI actually exposes locally (verified, not assumed)
 PLAN.md       implementation plan
 ```

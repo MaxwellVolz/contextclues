@@ -1,6 +1,6 @@
 import type { CompositionSlice } from "@/lib/types.ts";
 import Panel from "./Panel";
-import { CATEGORY_COLOR, fmtTokens } from "./util";
+import { CATEGORY_COLOR, formatTokens } from "./util";
 
 /** Part-of-whole: one stacked horizontal bar with 2px surface gaps + a full-value legend. */
 export default function Composition({ slices }: { slices: CompositionSlice[] }) {
@@ -11,7 +11,7 @@ export default function Composition({ slices }: { slices: CompositionSlice[] }) 
     <Panel
       title="Composition"
       className="shrink-0"
-      right={<span className="text-[10px] tabular-nums text-ink-3">~{fmtTokens(total)} tokens accounted</span>}
+      right={<span className="text-[10px] tabular-nums text-ink-3">~{formatTokens(total)} tokens accounted</span>}
       bodyClass="gap-3.5"
       foot={
         <>
@@ -40,7 +40,7 @@ export default function Composition({ slices }: { slices: CompositionSlice[] }) 
               return (
                 <div
                   key={s.key}
-                  title={`${s.label}: ~${fmtTokens(s.estTokens)} tokens (${pct.toFixed(1)}%, ${s.confidence})`}
+                  title={`${s.label}: ~${formatTokens(s.estTokens)} tokens (${pct.toFixed(1)}%, ${s.confidence})`}
                   className={s.confidence === "inferred" ? "tex-inferred" : ""}
                   style={{
                     width: `${pct}%`,
@@ -67,7 +67,7 @@ export default function Composition({ slices }: { slices: CompositionSlice[] }) 
                     {s.label}
                     {s.count > 1 && <span className="text-ink-3"> ×{s.count}</span>}
                   </span>
-                  <span className="tabular-nums text-ink-2">~{fmtTokens(s.estTokens)}</span>
+                  <span className="tabular-nums text-ink-2">~{formatTokens(s.estTokens)}</span>
                   <span className="text-right tabular-nums text-ink-3">{pct.toFixed(1)}%</span>
                 </li>
               );

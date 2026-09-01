@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy: ContextClues</title>
+<meta name="description" content="What ContextClues does with your data. The tool runs entirely on your machine and makes no network requests. This site sets no cookies.">
+<link rel="canonical" href="https://ctxclues.com/privacy">
+<meta name="theme-color" content="#131110">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Maxwell Volz">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ContextClues">
+<meta property="og:url" content="https://ctxclues.com/privacy">
+<meta property="og:title" content="Privacy: ContextClues">
+<meta property="og:description" content="The tool runs entirely on your machine and makes no network requests. This site sets no cookies.">
+<meta property="og:image" content="https://ctxclues.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ContextClues dashboard showing a context meter at 37.9 percent of a one million token window.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Privacy: ContextClues">
+<meta name="twitter:description" content="The tool runs entirely on your machine and makes no network requests. This site sets no cookies.">
+<meta name="twitter:image" content="https://ctxclues.com/og.png">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/jetbrains-mono-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/base.css">
+</head>
+<body class="page">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<nav aria-label="Primary">
+  <div class="nav-in">
+    <a class="mark" href="/">CONTEXT<span>CLUES</span></a>
+    <div class="nav-sp"></div>
+    <a class="nav-a" href="/">Home</a>
+    <a class="nav-a" href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
+  </div>
+</nav>
+
+<main id="main">
+  <div class="wrap">
+    <h1>Privacy</h1>
+    <p class="sub">ContextClues reads some of the most sensitive text on your machine, so it is worth being precise about where that text goes. The short version: nowhere.</p>
+
+    <div class="card">
+      <p><strong>The tool makes no network requests.</strong> It has no cloud service, no account, no authentication, and no telemetry. It reads session files that Claude Code has already written to your own disk, indexes them locally, and serves a dashboard on <code>127.0.0.1</code>. Nothing is uploaded, and nothing you do in the dashboard is reported anywhere.</p>
+    </div>
+
+    <h2>What the tool reads</h2>
+    <ul>
+      <li><strong>Session transcripts</strong> from <code>~/.claude/projects/</code> and the session registry in <code>~/.claude/sessions/</code>.</li>
+      <li><strong>Configuration</strong> that lists which tools are available: <code>~/.claude.json</code>, <code>~/.claude/settings.json</code>, project-level <code>.mcp.json</code>, plugins and skills.</li>
+    </ul>
+    <p>All of these are opened read only. ContextClues never modifies a file that Claude Code owns.</p>
+
+    <h2>What the tool writes</h2>
+    <p>One SQLite database at <code>~/.contextclues/</code>, containing an index of your transcripts: sizes, timestamps, categories, tool names, and short redacted previews. Delete that directory at any time and it rebuilds itself from the transcripts.</p>
+
+    <h2>Secret redaction</h2>
+    <p>Transcripts routinely contain credentials, so every preview is scrubbed <strong>before</strong> it is written to the database or rendered in the browser. The redactor covers vendor API keys (Anthropic, OpenAI, Google, Stripe, AWS, GitHub, GitLab, Slack, npm, HuggingFace), JWTs, bearer tokens, private key blocks, passwords embedded in database connection strings, and assignments whose name looks secret.</p>
+    <p>Redaction is a safety net rather than a guarantee. It is pattern based, so a credential in an unusual format can slip through. If you find one, <a href="https://github.com/MaxwellVolz/contextclues/issues">open an issue</a> and it will be added.</p>
+
+    <h2>Network exposure</h2>
+    <p>The server binds the loopback interface (<code>127.0.0.1</code>) by default, so the dashboard is reachable only from your own machine and not from your local network. Passing <code>--host 0.0.0.0</code> overrides that and exposes a view of your transcripts to anyone who can reach the port, so do that only on a network you trust.</p>
+
+    <h2>This website</h2>
+    <ul>
+      <li><strong>No cookies.</strong> This site sets none, and stores nothing in your browser.</li>
+      <li><strong>No third-party requests.</strong> Fonts are served from this domain rather than a font CDN, so no other company sees your visit.</li>
+      <li><strong>Cookieless analytics.</strong> Aggregate page view counts are collected from this domain to gauge interest. No cookies are set, no personal data is stored, and visitors are not tracked between sites or across sessions.</li>
+    </ul>
+    <p>The analytics apply to this website only. The ContextClues tool you install still makes no network requests of any kind.</p>
+
+    <h2>Questions</h2>
+    <p>The whole thing is open source and small enough to audit in an afternoon. The redaction rules live in <a href="https://github.com/MaxwellVolz/contextclues/blob/main/lib/redact.ts"><code>lib/redact.ts</code></a>, and every claim above is checked by the test suite. If something here does not match the code, that is a bug worth reporting.</p>
+
+    <p class="updated">Last updated 1 September 2026 &middot; <a href="https://github.com/MaxwellVolz/contextclues">Source on GitHub</a></p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="mark">CONTEXT<span>CLUES</span></div>
+      <div class="sp"></div>
+      <a href="/">Home</a>
+      <a href="https://github.com/MaxwellVolz/contextclues">GitHub</a>
+      <a href="https://www.npmjs.com/package/contextclues">npm</a>
+      <a href="https://github.com/MaxwellVolz/contextclues/blob/main/LICENSE">MIT License</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <p class="disc">An independent open source tool. Not affiliated with, endorsed by, or sponsored by Anthropic. Claude and Claude Code are trademarks of Anthropic. ContextClues reads local session files that Claude Code writes to your own disk, and sends nothing anywhere.</p>
+  </div>
+</footer>
+
+<script defer src="/_vercel/insights/script.js"></script>
+
+</body>
+</html>

@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [selected, setSelected] = useState<string | null>(null);
   const [caseFile, setCaseFile] = useState<CaseFile | null>(null);
   const [connected, setConnected] = useState(false);
+  const [scanned, setScanned] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const userPickedRef = useRef(false);
@@ -54,6 +55,8 @@ export default function Dashboard() {
       setError(null);
     } catch {
       setError("collector unreachable");
+    } finally {
+      setScanned(true);
     }
   }, []);
 
@@ -164,12 +167,19 @@ export default function Dashboard() {
             <ActivityFeed activity={caseFile.activity} />
           </div>
         </div>
-      ) : (
-        <div className="panel flex flex-1 items-center justify-center text-sm text-ink-3">
-          {cases.length === 0
-            ? "Scanning ~/.claude for sessions… start a Claude CLI session to open a case."
-            : "Opening case file…"}
+      ) : !scanned ? (
+        <DashboardSkeleton label="Scanning ~/.claude for sessions…" />
+      ) : cases.length === 0 ? (
+        <div className="panel flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
+          <p className="text-sm text-ink-2">No Claude Code sessions found yet.</p>
+          <p className="max-w-md text-xs leading-relaxed text-ink-3">
+            ContextClues reads transcripts from <code className="text-ink-2">~/.claude</code>. Start
+            a Claude Code session in another terminal and this board will open a case for it
+            automatically.
+          </p>
         </div>
+      ) : (
+        <DashboardSkeleton label="Opening case file…" />
       )}
 
       {caseFile && caseFile.notes.length > 0 && (
@@ -186,5 +196,45 @@ export default function Dashboard() {
         </footer>
       )}
     </main>
+  );
+}
+
+function SkeletonPanel({ className = "", rows = 4 }: { className?: string; rows?: number }) {
+  return (
+    <section className={`panel flex min-h-0 flex-col ${className}`} aria-hidden>
+      <header className="panel-head shrink-0">
+        <div className="skeleton h-2.5 w-28" />
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 p-4">
+        {Array.from({ length: rows }, (_, i) => (
+          <div key={i} className="skeleton h-2.5" style={{ width: `${92 - i * 11}%` }} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DashboardSkeleton({ label }: { label: string }) {
+  return (
+    <div
+      className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(320px,380px)_1fr_minmax(300px,400px)]"
+      role="status"
+      aria-live="polite"
+      aria-label={label}
+    >
+      <div className="flex min-h-0 min-w-0 flex-col gap-4">
+        <SkeletonPanel className="h-[230px] shrink-0" rows={5} />
+        <SkeletonPanel className="h-[190px] shrink-0" rows={4} />
+        <SkeletonPanel className="min-h-[180px] flex-1" rows={3} />
+      </div>
+      <div className="flex min-h-0 min-w-0 flex-col">
+        <SkeletonPanel className="flex-1" rows={9} />
+      </div>
+      <div className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-4">
+        <SkeletonPanel rows={5} />
+        <SkeletonPanel rows={6} />
+      </div>
+      <span className="sr-only">{label}</span>
+    </div>
   );
 }

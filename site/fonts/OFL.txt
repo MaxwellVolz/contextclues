@@ -1,0 +1,12 @@
+The self-hosted fonts in this directory are licensed under the
+SIL Open Font License, Version 1.1.
+
+  Inter            Copyright (c) The Inter Project Authors
+                   https://github.com/rsms/inter
+  JetBrains Mono   Copyright (c) The JetBrains Mono Project Authors
+                   https://github.com/JetBrains/JetBrainsMono
+
+Full license text: https://openfontlicense.org/open-font-license-official-text/
+
+Both files are the latin subset of the upstream variable fonts, retrieved from
+Google Fonts and served from this origin so the site makes no third-party requests.

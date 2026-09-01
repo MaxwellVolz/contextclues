@@ -174,7 +174,6 @@ export class Collector {
               ts: ev.ts,
               name: tu.name,
               filePath: tu.filePath,
-              inputChars: tu.inputChars,
               inputPreview: tu.inputPreview,
             });
           }

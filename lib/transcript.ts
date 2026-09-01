@@ -10,7 +10,6 @@ export interface ToolUseRef {
   id: string;
   name: string;
   filePath: string | null;
-  inputChars: number;
   inputPreview: string;
 }
 
@@ -25,9 +24,7 @@ export interface CompactObserved {
   trigger: string | null;
   preTokens: number | null;
   postTokens: number | null;
-  cumulativeDroppedTokens: number | null;
   preservedUuids: string[];
-  discoveredTools: string[];
 }
 
 export interface EventExtra {
@@ -38,14 +35,12 @@ export interface EventExtra {
   skillNames?: string[];
   toolsAdded?: string[];
   toolsRemoved?: string[];
-  pendingMcpServers?: string[];
   budgetTokensLeft?: number;
 }
 
 export interface NormalizedEvent {
   lineNo: number;
   uuid: string | null;
-  parentUuid: string | null;
   ts: string | null;
   type: string;
   subtype: string | null;
@@ -122,7 +117,6 @@ export function parseTranscriptLine(raw: string, lineNo: number): NormalizedEven
   const base: NormalizedEvent = {
     lineNo,
     uuid: asString(rec.uuid),
-    parentUuid: asString(rec.parentUuid),
     ts: asString(rec.timestamp),
     type,
     subtype: asString(rec.subtype),
@@ -221,7 +215,6 @@ export function parseTranscriptLine(raw: string, lineNo: number): NormalizedEven
               id,
               name,
               filePath: extractFilePath(input),
-              inputChars: inputJson.length,
               inputPreview: redactedPreview(inputJson, 160),
             });
           }
@@ -268,11 +261,6 @@ export function parseTranscriptLine(raw: string, lineNo: number): NormalizedEven
       if (Array.isArray(att.removedNames)) {
         base.extra.toolsRemoved = (att.removedNames as unknown[]).filter((n): n is string => typeof n === "string");
       }
-      if (Array.isArray(att.pendingMcpServers)) {
-        base.extra.pendingMcpServers = (att.pendingMcpServers as unknown[]).filter(
-          (n): n is string => typeof n === "string",
-        );
-      }
     }
     return base;
   }
@@ -295,12 +283,8 @@ export function parseTranscriptLine(raw: string, lineNo: number): NormalizedEven
         trigger: asString(meta.trigger),
         preTokens: asNumber(meta.preTokens),
         postTokens: asNumber(meta.postTokens),
-        cumulativeDroppedTokens: asNumber(meta.cumulativeDroppedTokens),
         preservedUuids: Array.isArray(preserved.uuids)
           ? (preserved.uuids as unknown[]).filter((u): u is string => typeof u === "string")
-          : [],
-        discoveredTools: Array.isArray(meta.preCompactDiscoveredTools)
-          ? (meta.preCompactDiscoveredTools as unknown[]).filter((t): t is string => typeof t === "string")
           : [],
       };
       base.preview = `Compaction (${base.extra.compact.trigger ?? "unknown trigger"}): ${

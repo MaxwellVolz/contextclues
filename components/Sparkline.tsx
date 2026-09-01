@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { TurnPoint } from "@/lib/types.ts";
-import { fmtTokens } from "./util";
+import { formatTokens } from "./util";
 
 /**
  * Context growth across the session's assistant turns. Single series, so no legend —
@@ -55,7 +55,7 @@ export default function Sparkline({ turns, totalTurns }: { turns: TurnPoint[]; t
           preserveAspectRatio="none"
           className="h-14 w-full"
           role="img"
-          aria-label={`Context grew to ${fmtTokens(turns.at(-1)!.contextTokens)} tokens over ${totalTurns} assistant turns`}
+          aria-label={`Context grew to ${formatTokens(turns.at(-1)!.contextTokens)} tokens over ${totalTurns} assistant turns`}
         >
           <polygon points={area} fill="var(--color-accent)" opacity="0.14" />
           <polyline
@@ -108,7 +108,7 @@ export default function Sparkline({ turns, totalTurns }: { turns: TurnPoint[]; t
           <>
             <span>request {active.n}</span>
             <span className="text-ink-2">
-              {fmtTokens(active.contextTokens)}
+              {formatTokens(active.contextTokens)}
               {active.afterCompaction && <span className="ml-1 text-s-summary">· post-compaction</span>}
             </span>
           </>

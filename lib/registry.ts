@@ -91,7 +91,6 @@ export interface RecentTranscript {
   sessionId: string;
   path: string;
   mtimeMs: number;
-  sizeBytes: number;
 }
 
 /** Transcripts modified within the window — recent "cold case" candidates. */
@@ -122,7 +121,6 @@ export function listRecentTranscripts(hours = 24): RecentTranscript[] {
             sessionId: f.replace(/\.jsonl$/, ""),
             path: p,
             mtimeMs: st.mtimeMs,
-            sizeBytes: st.size,
           });
         }
       } catch {

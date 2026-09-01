@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ToolInfo } from "@/lib/types.ts";
 import Panel from "./Panel";
 import { relTime } from "./util";
@@ -15,13 +15,14 @@ const STATUS_STYLE: Record<ToolInfo["status"], string> = {
 
 export default function ToolRegistry({ tools }: { tools: ToolInfo[] }) {
   const [q, setQ] = useState("");
-  const filtered = q
-    ? tools.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q.toLowerCase()) ||
-          t.provider.toLowerCase().includes(q.toLowerCase()),
-      )
-    : tools;
+  // The registry runs to hundreds of entries; fold the needle once, not twice per row.
+  const filtered = useMemo(() => {
+    if (!q) return tools;
+    const needle = q.toLowerCase();
+    return tools.filter(
+      (t) => t.name.toLowerCase().includes(needle) || t.provider.toLowerCase().includes(needle),
+    );
+  }, [tools, q]);
   const used = tools.filter((t) => t.status === "used").length;
 
   return (

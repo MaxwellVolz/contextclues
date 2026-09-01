@@ -8,6 +8,8 @@ export async function GET() {
   const collector = getCollector();
   collector.refreshRegistry();
   const db = getDb();
+  // One grouped scan for every session's event count, rather than a COUNT(*) per row.
+  const counts = db.eventCounts();
   const cases = db
     .listSessions(30)
     .filter((s) => s.transcript_path != null)
@@ -22,7 +24,7 @@ export async function GET() {
       updatedAt: s.updated_at,
       startedAt: s.started_at,
       model: s.model,
-      eventCount: db.eventCount(s.session_id),
+      eventCount: counts.get(s.session_id) ?? 0,
     }));
   return NextResponse.json({ cases });
 }

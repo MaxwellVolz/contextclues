@@ -17,7 +17,7 @@ export type EvidenceCategory =
   | "system_event"
   | "meta";
 
-export type Inclusion = "assumed-included" | "compacted-out" | "not-sent" | "unknown";
+export type Inclusion = "assumed-included" | "compacted-out" | "not-sent";
 
 export interface CaseSummary {
   sessionId: string;
@@ -30,7 +30,6 @@ export interface CaseSummary {
   startedAt: number | null;
   updatedAt: number | null;
   transcriptPath: string | null;
-  gitBranch: string | null;
   model: string | null;
   cliVersion: string | null;
   eventCount: number;
@@ -144,8 +143,7 @@ export type ActivityKind =
   | "file_read"
   | "compaction"
   | "context_injection"
-  | "config_change"
-  | "session";
+  | "config_change";
 
 export interface ActivityEvent {
   id: string;

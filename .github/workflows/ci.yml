@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.5 is the floor (node:sqlite); 22 and 24 are the current LTS lines.
+        os: [ubuntu-latest, macos-latest]
+        node: ["22.5.0", "22.x", "24.x"]
+    name: ${{ matrix.os }} · node ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # The published package is a prebuilt Next app, so verify the tarball a user
+      # actually installs, not just the working tree.
+      - run: npm pack
+      - name: Install the packed tarball and run its CLI
+        run: |
+          mkdir -p /tmp/pkgtest && cd /tmp/pkgtest
+          npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE"/contextclues-*.tgz
+          ./node_modules/.bin/contextclues --version
+          ./node_modules/.bin/contextclues --help >/dev/null

@@ -1,5 +1,9 @@
 import type { Confidence, EvidenceCategory } from "@/lib/types.ts";
 
+// Token formatting lives in lib/estimate.ts — the server renders the same figures
+// into clue and activity strings, so there is one implementation, not two.
+export { formatTokens } from "@/lib/estimate.ts";
+
 export function relTime(ts: string | number | null): string {
   if (ts == null) return "—";
   const t = typeof ts === "number" ? ts : Date.parse(ts);
@@ -10,14 +14,6 @@ export function relTime(ts: string | number | null): string {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m ago`;
   return `${Math.floor(s / 86400)}d ago`;
-}
-
-export function fmtTokens(n: number | null | undefined): string {
-  if (n == null || !Number.isFinite(n)) return "—";
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 10_000) return `${Math.round(n / 1000)}k`;
-  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
 }
 
 export const CATEGORY_COLOR: Record<EvidenceCategory | "overhead", string> = {

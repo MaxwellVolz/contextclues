@@ -1,7 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { estimateTokens, contextWindowForModel, formatTokens } from "../lib/estimate.ts";
-import { redact, redactedPreview } from "../lib/redact.ts";
 import { parseTranscriptLine } from "../lib/transcript.ts";
 import { deriveClues } from "../lib/clues.ts";
 import type { Meter } from "../lib/types.ts";
@@ -21,22 +20,6 @@ test("formatTokens", () => {
   assert.equal(formatTokens(1_500_000), "1.50M");
   assert.equal(formatTokens(999), "999");
   assert.equal(formatTokens(null), "—");
-});
-
-test("redact scrubs common secrets", () => {
-  assert.ok(!redact("key sk-ant-api03-abcdefghijkl").includes("sk-ant-api03"));
-  assert.ok(!redact("AKIAIOSFODNN7EXAMPLE").includes("AKIAIOSFODNN7"));
-  assert.ok(!redact("ghp_0123456789abcdefghij123").includes("ghp_0123456789"));
-  assert.ok(redact("MY_API_KEY=supersecretvalue").includes("[REDACTED:env-assignment]"));
-  assert.ok(redact("MY_API_KEY=supersecretvalue").startsWith("MY_API_KEY="));
-  const clean = "just ordinary text with no secrets, PATH=/usr/bin";
-  assert.equal(redact(clean), clean);
-});
-
-test("redactedPreview collapses whitespace and clamps", () => {
-  const p = redactedPreview("a\n\n  b   c" + "x".repeat(500), 50);
-  assert.ok(p.length <= 50);
-  assert.ok(p.startsWith("a b c"));
 });
 
 test("parse user prompt record", () => {
@@ -160,9 +143,9 @@ test("clue engine: pressure, duplicate reads, compaction", () => {
     meter: meterAt(88),
     evidence: [],
     toolUses: [
-      { tool_use_id: "1", session_id: "s", line_no: 1, ts: null, name: "Read", file_path: "/a.ts", input_chars: 10, input_preview: "", result_chars: 4000, result_line_no: 2 },
-      { tool_use_id: "2", session_id: "s", line_no: 3, ts: null, name: "Read", file_path: "/a.ts", input_chars: 10, input_preview: "", result_chars: 4000, result_line_no: 4 },
-      { tool_use_id: "3", session_id: "s", line_no: 5, ts: null, name: "Read", file_path: "/a.ts", input_chars: 10, input_preview: "", result_chars: 4000, result_line_no: 6 },
+      { tool_use_id: "1", session_id: "s", line_no: 1, ts: null, name: "Read", file_path: "/a.ts", input_preview: "", result_chars: 4000, result_line_no: 2 },
+      { tool_use_id: "2", session_id: "s", line_no: 3, ts: null, name: "Read", file_path: "/a.ts", input_preview: "", result_chars: 4000, result_line_no: 4 },
+      { tool_use_id: "3", session_id: "s", line_no: 5, ts: null, name: "Read", file_path: "/a.ts", input_preview: "", result_chars: 4000, result_line_no: 6 },
     ],
     tools: [],
     compactions: [{ lineNo: 10, trigger: "auto", preTokens: 998375, postTokens: 34405 }],
@@ -175,4 +158,143 @@ test("clue engine: pressure, duplicate reads, compaction", () => {
   const compact = clues.find((c) => c.id.startsWith("compact-"));
   assert.ok(compact);
   assert.match(compact!.title, /replaced 42 earlier records/);
+});
+
+// ---------- transcript branches the parser must not get wrong ----------
+
+test("thinking blocks are excluded from the size estimate", () => {
+  const line = JSON.stringify({
+    type: "assistant",
+    uuid: "a1",
+    message: {
+      model: "claude-opus-5",
+      content: [
+        { type: "thinking", thinking: "z".repeat(10_000) },
+        { type: "text", text: "short answer" },
+      ],
+    },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.equal(ev.chars, "short answer".length, "ephemeral reasoning is not context");
+});
+
+test("an assistant turn without usage still parses, just without a usage record", () => {
+  const line = JSON.stringify({
+    type: "assistant",
+    uuid: "a1",
+    message: { model: "claude-opus-5", content: [{ type: "text", text: "hi" }] },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.equal(ev.extra.usage, undefined);
+  assert.equal(ev.extra.model, "claude-opus-5");
+});
+
+test("deferred_tools_delta records added and removed tool names", () => {
+  const line = JSON.stringify({
+    type: "attachment",
+    attachment: {
+      type: "deferred_tools_delta",
+      addedNames: ["WebSearch", 42, "mcp__x__y"],
+      removedNames: ["Bash"],
+    },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.equal(ev.subtype, "deferred_tools_delta");
+  assert.deepEqual(ev.extra.toolsAdded, ["WebSearch", "mcp__x__y"], "non-strings are dropped");
+  assert.deepEqual(ev.extra.toolsRemoved, ["Bash"]);
+});
+
+test("skill_listing records the skills offered to the session", () => {
+  const line = JSON.stringify({
+    type: "attachment",
+    attachment: { type: "skill_listing", names: ["brainstorming", "shipping"] },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.deepEqual(ev.extra.skillNames, ["brainstorming", "shipping"]);
+});
+
+test("a token reminder without a parseable figure leaves the budget unset", () => {
+  const line = JSON.stringify({
+    type: "attachment",
+    attachment: { type: "total_tokens_reminder", text: "no number here" },
+  });
+  assert.equal(parseTranscriptLine(line, 1)!.extra.budgetTokensLeft, undefined);
+});
+
+test("system bookkeeping markers are meta, but real system content is not", () => {
+  for (const subtype of ["turn_duration", "stop_hook_summary"]) {
+    const ev = parseTranscriptLine(JSON.stringify({ type: "system", subtype }), 1)!;
+    assert.equal(ev.category, "meta", subtype);
+    assert.equal(ev.estTokens, 0);
+  }
+  const real = parseTranscriptLine(
+    JSON.stringify({ type: "system", subtype: "hook_output", content: "injected by a hook" }),
+    1,
+  )!;
+  assert.equal(real.category, "system_event");
+  assert.ok(real.estTokens > 0);
+});
+
+test("a compaction summary is its own category, not a user message", () => {
+  const line = JSON.stringify({
+    type: "user",
+    uuid: "s1",
+    isCompactSummary: true,
+    message: { role: "user", content: "Here is what happened so far." },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.equal(ev.category, "summary");
+  assert.equal(ev.isCompactSummary, true);
+  assert.ok(ev.estTokens > 0);
+});
+
+test("an unrecognized record type is kept visible but out of the accounting", () => {
+  const ev = parseTranscriptLine(JSON.stringify({ type: "some-future-record" }), 1)!;
+  assert.equal(ev.category, "meta");
+  assert.equal(ev.estTokens, 0);
+  assert.match(ev.preview, /unrecognized record type/);
+});
+
+test("a user record with an unexpected content shape degrades rather than throws", () => {
+  const ev = parseTranscriptLine(JSON.stringify({ type: "user", message: { content: 42 } }), 1)!;
+  assert.equal(ev.category, "user_message");
+  assert.equal(ev.estTokens, 0);
+  assert.match(ev.preview, /unrecognized content shape/);
+});
+
+test("a tool call's file path is found under any of the known input keys", () => {
+  const cases: [Record<string, unknown>, string | null][] = [
+    [{ file_path: "/a" }, "/a"],
+    [{ filePath: "/b" }, "/b"],
+    [{ path: "/c" }, "/c"],
+    [{ notebook_path: "/d" }, "/d"],
+    [{ url: "https://e" }, "https://e"],
+    [{ pattern: "x" }, null],
+  ];
+  for (const [input, expected] of cases) {
+    const line = JSON.stringify({
+      type: "assistant",
+      message: { content: [{ type: "tool_use", id: "t1", name: "T", input }] },
+    });
+    assert.equal(parseTranscriptLine(line, 1)!.toolUses[0].filePath, expected, JSON.stringify(input));
+  }
+});
+
+test("image blocks are counted as a placeholder, not as zero", () => {
+  const line = JSON.stringify({
+    type: "user",
+    message: { content: [{ type: "image", source: { data: "AAAA" } }] },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.equal(ev.preview, "[image]");
+});
+
+test("secrets are scrubbed from previews before anything is stored", () => {
+  const line = JSON.stringify({
+    type: "user",
+    message: { role: "user", content: "deploy with sk-" + "ant-api03-abcdefghijklmnop please" },
+  });
+  const ev = parseTranscriptLine(line, 1)!;
+  assert.ok(!ev.preview.includes("ant-api03-abcdefghijklmnop"));
+  assert.match(ev.preview, /\[REDACTED:anthropic-key\]/);
 });

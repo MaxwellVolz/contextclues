@@ -3,13 +3,12 @@
 import { useMemo, useState } from "react";
 import type { EvidenceItem, Inclusion } from "@/lib/types.ts";
 import Panel from "./Panel";
-import { CATEGORY_COLOR, CATEGORY_SHORT, fmtTokens, relTime } from "./util";
+import { CATEGORY_COLOR, CATEGORY_SHORT, formatTokens, relTime } from "./util";
 
 /* The default state ("in context") stays quiet; only exceptions get a colored pill. */
 const EXCEPTION_PILL: Partial<Record<Inclusion, { label: string; cls: string }>> = {
   "compacted-out": { label: "compacted out", cls: "text-s-summary border-s-summary/60" },
   "not-sent": { label: "not sent", cls: "text-ink-3 border-line-2" },
-  unknown: { label: "unknown", cls: "text-ink-3 border-line-2 border-dashed" },
 };
 
 const RENDER_CAP = 250;
@@ -19,7 +18,10 @@ export default function EvidenceExplorer({ evidence }: { evidence: EvidenceItem[
   const [onlyContext, setOnlyContext] = useState(true);
   const [open, setOpen] = useState<string | null>(null);
 
-  const maxTokens = useMemo(() => Math.max(1, ...evidence.map((e) => e.estTokens)), [evidence]);
+  const maxTokens = useMemo(
+    () => evidence.reduce((m, e) => (e.estTokens > m ? e.estTokens : m), 1),
+    [evidence],
+  );
 
   const filtered = useMemo(() => {
     let list = evidence;
@@ -109,7 +111,7 @@ export default function EvidenceExplorer({ evidence }: { evidence: EvidenceItem[
                     {e.preview || <span className="text-ink-3">(empty)</span>}
                   </span>
                   <span className="w-14 shrink-0 text-right tabular-nums text-ink-2" title={`${e.chars.toLocaleString()} chars`}>
-                    {e.estTokens > 0 ? `~${fmtTokens(e.estTokens)}` : "·"}
+                    {e.estTokens > 0 ? `~${formatTokens(e.estTokens)}` : "·"}
                   </span>
                   <span className="w-14 shrink-0 text-right tabular-nums text-ink-3">{relTime(e.ts)}</span>
                   <span className="flex w-24 shrink-0 justify-end">

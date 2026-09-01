@@ -2,7 +2,7 @@ import type { Meter, Trajectory } from "@/lib/types.ts";
 import ConfidenceTag from "./ConfidenceTag";
 import Panel from "./Panel";
 import Sparkline from "./Sparkline";
-import { fmtTokens, relTime } from "./util";
+import { formatTokens, relTime } from "./util";
 
 function fmtDuration(minutes: number | null): string | null {
   if (minutes == null || !Number.isFinite(minutes)) return null;
@@ -23,8 +23,8 @@ export default function ContextMeter({ meter, trajectory }: { meter: Meter; traj
     turnsRemaining == null
       ? null
       : turnsRemainingOptimistic != null
-        ? `~${fmtTokens(turnsRemaining)}–${fmtTokens(turnsRemainingOptimistic)} req`
-        : `~${fmtTokens(turnsRemaining)} req`;
+        ? `~${formatTokens(turnsRemaining)}–${formatTokens(turnsRemainingOptimistic)} req`
+        : `~${formatTokens(turnsRemaining)} req`;
 
   return (
     <Panel
@@ -45,8 +45,8 @@ export default function ContextMeter({ meter, trajectory }: { meter: Meter; traj
         </span>
         <div className="text-right">
           <p className="text-sm tabular-nums text-ink-2">
-            {fmtTokens(meter.contextTokens)}{" "}
-            <span className="text-ink-3">/ {fmtTokens(meter.maxTokens)}</span>
+            {formatTokens(meter.contextTokens)}{" "}
+            <span className="text-ink-3">/ {formatTokens(meter.maxTokens)}</span>
           </p>
           {pressure ? (
             <p
@@ -87,13 +87,13 @@ export default function ContextMeter({ meter, trajectory }: { meter: Meter; traj
         <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
           <Row
             k="burn rate"
-            v={burnRatePerTurn == null ? "—" : `~${fmtTokens(burnRatePerTurn)}/req`}
+            v={burnRatePerTurn == null ? "—" : `~${formatTokens(burnRatePerTurn)}/req`}
             title={
               burnRatePerTurn == null
                 ? (trajectory.reason ?? "no rate yet")
                 : `Average growth per model request across the last ${trajectory.sampleSize} requests (observed).` +
                   (burnRateTypical != null
-                    ? ` A typical request adds ~${fmtTokens(burnRateTypical)}; the average is higher because occasional large reads count at the rate they actually occur.`
+                    ? ` A typical request adds ~${formatTokens(burnRateTypical)}; the average is higher because occasional large reads count at the rate they actually occur.`
                     : "") +
                   " A request is one API call — a single exchange is usually several."
             }
@@ -122,7 +122,7 @@ export default function ContextMeter({ meter, trajectory }: { meter: Meter; traj
               <span className="text-ink-2">projected</span>
               {volatility === "variable" &&
                 burnRateTypical != null &&
-                `; a typical request adds only ~${fmtTokens(burnRateTypical)}, so large reads dominate`}
+                `; a typical request adds only ~${formatTokens(burnRateTypical)}, so large reads dominate`}
               .
             </>
           )}
@@ -132,15 +132,15 @@ export default function ContextMeter({ meter, trajectory }: { meter: Meter; traj
       <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
         {meter.usageBreakdown && (
           <>
-            <Row k="cache read" v={fmtTokens(meter.usageBreakdown.cacheRead)} />
-            <Row k="cache write" v={fmtTokens(meter.usageBreakdown.cacheCreation)} />
-            <Row k="fresh input" v={fmtTokens(meter.usageBreakdown.input)} />
-            <Row k="output" v={fmtTokens(meter.usageBreakdown.output)} />
+            <Row k="cache read" v={formatTokens(meter.usageBreakdown.cacheRead)} />
+            <Row k="cache write" v={formatTokens(meter.usageBreakdown.cacheCreation)} />
+            <Row k="fresh input" v={formatTokens(meter.usageBreakdown.input)} />
+            <Row k="output" v={formatTokens(meter.usageBreakdown.output)} />
           </>
         )}
         <Row k="observed" v={meter.observedAt ? relTime(meter.observedAt) : "never"} />
-        <Row k="since then" v={`+~${fmtTokens(meter.estTokensSinceObserved)}`} />
-        {meter.budgetTokensLeft != null && <Row k="budget left" v={fmtTokens(meter.budgetTokensLeft)} />}
+        <Row k="since then" v={`+~${formatTokens(meter.estTokensSinceObserved)}`} />
+        {meter.budgetTokensLeft != null && <Row k="budget left" v={formatTokens(meter.budgetTokensLeft)} />}
         <Row k="model" v={meter.model ?? "unknown"} />
       </dl>
     </Panel>

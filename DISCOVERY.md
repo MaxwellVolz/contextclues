@@ -61,4 +61,4 @@ or exact per-message context membership between compactions. The UI labels membe
    this project's constraints forbid doing automatically. The README documents an optional
    hook the user may add themselves in a later iteration; the MVP does not require it.
 3. **No writes, ever**: all Claude files are opened read-only; ContextClues state lives in its own
-   SQLite database under `./.data/`.
+   SQLite database under `~/.contextclues/`.

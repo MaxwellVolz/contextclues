@@ -1,6 +1,6 @@
 import type { ActivityEvent } from "@/lib/types.ts";
 import Panel from "./Panel";
-import { fmtTokens, relTime } from "./util";
+import { formatTokens, relTime } from "./util";
 
 const KIND_ICON: Record<ActivityEvent["kind"], string> = {
   user_prompt: "❯",
@@ -11,7 +11,6 @@ const KIND_ICON: Record<ActivityEvent["kind"], string> = {
   compaction: "▽",
   context_injection: "✚",
   config_change: "⚑",
-  session: "●",
 };
 
 const KIND_COLOR: Record<ActivityEvent["kind"], string> = {
@@ -23,7 +22,6 @@ const KIND_COLOR: Record<ActivityEvent["kind"], string> = {
   compaction: "text-s-summary",
   context_injection: "text-s-injected",
   config_change: "text-accent",
-  session: "text-ink-2",
 };
 
 export default function ActivityFeed({ activity }: { activity: ActivityEvent[] }) {
@@ -51,7 +49,7 @@ export default function ActivityFeed({ activity }: { activity: ActivityEvent[] }
             <div className="shrink-0 pt-px text-right">
               <p className="text-[10px] tabular-nums text-ink-3">{relTime(a.ts)}</p>
               {a.estTokens != null && a.kind !== "assistant_reply" && (
-                <p className="text-[10px] tabular-nums text-ink-3/70">~{fmtTokens(a.estTokens)}</p>
+                <p className="text-[10px] tabular-nums text-ink-3/70">~{formatTokens(a.estTokens)}</p>
               )}
             </div>
           </li>

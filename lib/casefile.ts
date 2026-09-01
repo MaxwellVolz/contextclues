@@ -31,6 +31,15 @@ function parseExtra(row: EventRow): EventExtra {
   }
 }
 
+/** Higher-signal statuses sort (and win merges) first. */
+const STATUS_RANK: Record<ToolInfo["status"], number> = {
+  used: 0,
+  active: 1,
+  deferred: 2,
+  configured: 3,
+  assumed: 4,
+};
+
 const CATEGORY_LABELS: Record<string, string> = {
   user_message: "User messages",
   assistant_message: "Assistant replies",
@@ -166,9 +175,9 @@ export function buildCaseFile(sessionId: string): CaseFile | null {
   if (window.maxTokens == null) {
     notes.push(`Context window unknown for model "${model ?? "unidentified"}" — percentage cannot be computed.`);
   }
-  const estSince = meterUsage
-    ? included.filter((e) => e.lineNo > meterUsage!.line).reduce((s, e) => s + e.estTokens, 0)
-    : included.reduce((s, e) => s + e.estTokens, 0);
+  const sinceLine = meterUsage?.line ?? -1;
+  let estSince = 0;
+  for (const e of included) if (e.lineNo > sinceLine) estSince += e.estTokens;
   const meter: Meter = {
     contextTokens,
     observedAt: meterUsage?.ts ?? null,
@@ -214,6 +223,8 @@ export function buildCaseFile(sessionId: string): CaseFile | null {
     const accounted = composition.reduce((s, c) => s + c.estTokens, 0);
     const overhead = contextTokens - accounted;
     if (overhead > 0) {
+      // Appended after the sort deliberately: the measured categories rank by size,
+      // and the remainder is pinned last so the stacked bar always ends on it.
       composition.push({
         key: "overhead",
         label: "System prompt, tool schemas & unaccounted",
@@ -229,7 +240,8 @@ export function buildCaseFile(sessionId: string): CaseFile | null {
   }
 
   // ---- tools ----
-  const tools = buildToolRegistry(session.cwd, rows, extras, toolUses);
+  const { tools, configNotes } = buildToolRegistry(session.cwd, rows, extras, toolUses);
+  notes.push(...configNotes);
 
   // ---- activity ----
   const activity = buildActivity(sessionId, rows, extras, toolUses);
@@ -261,7 +273,6 @@ export function buildCaseFile(sessionId: string): CaseFile | null {
     startedAt: session.started_at,
     updatedAt: session.updated_at,
     transcriptPath: session.transcript_path,
-    gitBranch: null,
     model,
     cliVersion: session.cli_version,
     eventCount: rows.length,
@@ -294,7 +305,7 @@ function buildToolRegistry(
   rows: EventRow[],
   extras: EventExtra[],
   toolUses: { name: string; ts: string | null }[],
-): ToolInfo[] {
+): { tools: ToolInfo[]; configNotes: string[] } {
   const map = new Map<string, ToolInfo>();
   const put = (t: ToolInfo) => {
     const existing = map.get(t.name);
@@ -303,8 +314,7 @@ function buildToolRegistry(
       return;
     }
     // Higher-signal statuses win; usage counts always merge.
-    const rank = { used: 0, active: 1, deferred: 2, configured: 3, assumed: 4 } as const;
-    if (rank[t.status] < rank[existing.status]) {
+    if (STATUS_RANK[t.status] < STATUS_RANK[existing.status]) {
       existing.status = t.status;
       existing.source = t.source;
     }
@@ -411,10 +421,13 @@ function buildToolRegistry(
     }
   }
 
-  const rank = { used: 0, active: 1, deferred: 2, configured: 3, assumed: 4 } as const;
-  return [...map.values()].sort(
-    (a, b) => rank[a.status] - rank[b.status] || b.useCount - a.useCount || a.name.localeCompare(b.name),
+  const tools = [...map.values()].sort(
+    (a, b) =>
+      STATUS_RANK[a.status] - STATUS_RANK[b.status] ||
+      b.useCount - a.useCount ||
+      a.name.localeCompare(b.name),
   );
+  return { tools, configNotes: cfg.configNotes };
 }
 
 function buildActivity(

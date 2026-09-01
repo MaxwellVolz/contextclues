@@ -9,7 +9,7 @@ One Next.js (App Router, TypeScript, Tailwind v4) process. The collector runs in
 Next server as a lazily-initialized singleton — no second daemon to manage.
 
 ```
-~/.claude/sessions/*.json ──┐   chokidar    ┌─ SQLite (node:sqlite, ./.data/contextclues.db)
+~/.claude/sessions/*.json ──┐   chokidar    ┌─ SQLite (node:sqlite, ~/.contextclues/*.db)
 ~/.claude/projects/**.jsonl ├──▶ collector ──┤
 ~/.claude.json, settings,   │   (read-only)  └─ event bus ──▶ /api/stream (SSE) ──▶ UI refetch
 .mcp.json, plugins, skills ─┘

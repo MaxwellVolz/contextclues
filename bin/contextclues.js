@@ -10,6 +10,19 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
+import { createServer } from "node:net";
+
+// node:sqlite is what removes the native build step, and it landed in 22.5. Check
+// before anything else, so an old runtime gets this instead of a module-not-found stack.
+const [major, minor] = process.versions.node.split(".").map(Number);
+if (major < 22 || (major === 22 && minor < 5)) {
+  console.error(
+    `contextclues: needs Node 22.5 or newer (found ${process.versions.node}).\n` +
+      "It uses the built-in node:sqlite module, which older versions do not have.\n" +
+      "Upgrade at https://nodejs.org, or with: nvm install 22"
+  );
+  process.exit(1);
+}
 
 const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pkg = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8"));
@@ -73,6 +86,31 @@ if (!Number.isInteger(opts.port) || opts.port < 1 || opts.port > 65535) {
   process.exit(1);
 }
 
+const url = `http://${opts.host === "0.0.0.0" ? "localhost" : opts.host}:${opts.port}`;
+
+/** Fail with a usable message rather than the runtime's EADDRINUSE stack trace. */
+function checkPortFree(port, host) {
+  return new Promise((resolve) => {
+    const probe = createServer();
+    probe.once("error", (err) => resolve(err.code ?? "EUNKNOWN"));
+    probe.once("listening", () => probe.close(() => resolve(null)));
+    probe.listen(port, host);
+  });
+}
+
+const portError = await checkPortFree(opts.port, opts.host);
+if (portError === "EADDRINUSE") {
+  console.error(
+    `contextclues: port ${opts.port} is already in use.\n` +
+      `If ContextClues is already running, open ${url}\n` +
+      `Otherwise pick another port:  contextclues --port ${opts.port + 1}`
+  );
+  process.exit(1);
+} else if (portError === "EACCES") {
+  console.error(`contextclues: not allowed to bind port ${opts.port}. Try a port above 1024.`);
+  process.exit(1);
+}
+
 const require = createRequire(import.meta.url);
 let nextBin;
 try {
@@ -85,11 +123,18 @@ try {
   process.exit(1);
 }
 
-const url = `http://${opts.host === "0.0.0.0" ? "localhost" : opts.host}:${opts.port}`;
-
 const child = spawn(
   process.execPath,
-  [nextBin, "start", pkgRoot, "-p", String(opts.port), "-H", opts.host],
+  [
+    "--disable-warning=ExperimentalWarning",
+    nextBin,
+    "start",
+    pkgRoot,
+    "-p",
+    String(opts.port),
+    "-H",
+    opts.host,
+  ],
   { stdio: ["inherit", "pipe", "inherit"], env: { ...process.env } }
 );
 
